@@ -1,0 +1,15 @@
+[package]
+name = "sc-sha256"
+description = "SHA-256 wrapper for Signalis Core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+sha2 = { workspace = true }
+
+[dev-dependencies]
+hex-literal = { workspace = true }

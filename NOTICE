@@ -1,0 +1,12 @@
+Signalis Core
+Copyright 2026 Brashkie (Hepein)
+
+This product includes software developed by:
+  - The curve25519-dalek authors (https://github.com/dalek-cryptography/curve25519-dalek)
+  - The RustCrypto project (https://github.com/RustCrypto)
+  - The napi-rs project (https://github.com/napi-rs/napi-rs)
+
+Signal Protocol design © Open Whisper Systems / Signal Foundation.
+This implementation is independent and not affiliated with Signal Foundation.
+
+For the full list of dependencies and their licenses, see Cargo.lock and package.json.

@@ -1,0 +1,123 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# .npmignore — Files NOT to publish to npm
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# NOTE: When `files` is specified in package.json, npm uses that list FIRST.
+# This .npmignore acts as a backup safety net.
+#
+# What WILL be published (defined in package.json "files"):
+#   - dist/             ← compiled output (CJS + ESM + types)
+#   - index.js          ← NAPI loader
+#   - index.d.ts        ← NAPI types
+#   - README.md         ← English docs
+#   - README.es.md      ← Spanish docs
+#   - LICENSE           ← Apache 2.0
+#   - NOTICE            ← Required by Apache 2.0
+#   - CHANGELOG.md      ← Version history
+#   - *.node (per platform, added by napi-rs automation)
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ───── Source code (compiled output is in dist/) ─────
+src/
+crates/
+target/
+*.rs
+Cargo.toml
+Cargo.lock
+build.rs
+
+# ───── Tests ─────
+__tests__/
+tests/
+test/
+*.test.ts
+*.test.js
+*.test.cjs
+*.test.mjs
+*.spec.ts
+*.spec.js
+vitest.config.ts
+vitest.config.js
+
+# ───── Examples ─────
+examples/
+example/
+demo/
+
+# ───── Build & Dev tooling ─────
+tsup.config.ts
+tsconfig.json
+tsconfig.*.json
+.eslintrc*
+.prettierrc*
+.editorconfig
+*.config.ts
+*.config.js
+*.config.mjs
+
+# ───── Documentation (only README files go to npm) ─────
+docs/
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+SECURITY.md
+ROADMAP.md
+QUICKSTART.md
+TESTING-PLAN.md
+
+# ───── CI / GitHub ─────
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+azure-pipelines.yml
+
+# ───── Coverage & test reports ─────
+coverage/
+.nyc_output/
+*.lcov
+
+# ───── Version control ─────
+.git/
+.gitignore
+.gitattributes
+
+# ───── IDE & editors ─────
+.vscode/
+.idea/
+*.iml
+*.sublime-*
+*.swp
+*.swo
+
+# ───── OS files ─────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ───── Logs & temporary ─────
+logs/
+*.log
+npm-debug.log*
+tmp/
+temp/
+*.tmp
+*.bak
+
+# ───── Environment ─────
+.env
+.env.*
+!.env.example
+
+# ───── npm internals ─────
+.npmrc
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# ───── Misc dev files ─────
+.husky/
+.changeset/
+.turbo/
+node_modules/

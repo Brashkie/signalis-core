@@ -1,0 +1,519 @@
+/**
+ * Core cryptographic wrappers for signalis-core.
+ *
+ * Provides robust, validated, and well-documented APIs over the native Rust
+ * crypto primitives.
+ *
+ * @packageDocumentation
+ */
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+import * as native from '../index.js';
+
+import {
+  CURVE25519_PRIVATE_KEY_SIZE,
+  CURVE25519_PUBLIC_KEY_SIZE,
+  CURVE25519_SHARED_SECRET_SIZE,
+  HKDF_PRK_SIZE,
+  AES_256_KEY_SIZE,
+  AES_256_GCM_NONCE_SIZE,
+  AES_256_GCM_TAG_SIZE,
+  AES_256_CBC_IV_SIZE,
+  HMAC_SHA256_TAG_SIZE,
+  SHA256_OUTPUT_SIZE,
+} from './constants';
+
+import {
+  CryptoError,
+  AuthenticationError,
+} from './errors';
+
+import {
+  assertBufferOfSize,
+  assertBuffer,
+  assertHkdfLength,
+} from './validators';
+
+import type {
+  KeyPair,
+  HkdfParams,
+} from './types';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Curve25519 / X25519
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Curve25519 / X25519 elliptic curve operations.
+ *
+ * Provides:
+ * - Keypair generation
+ * - Public key derivation
+ * - ECDH key agreement
+ *
+ * @example
+ * ```ts
+ * import { Curve25519 } from '@brashkie/signalis-core';
+ *
+ * const alice = Curve25519.generateKeyPair();
+ * const bob = Curve25519.generateKeyPair();
+ *
+ * const shared = Curve25519.diffieHellman(alice.privateKey, bob.publicKey);
+ * // ⚠️ Always derive via HKDF before use as a key!
+ * ```
+ */
+export const Curve25519 = Object.freeze({
+  /**
+   * Generate a new random Curve25519 keypair.
+   *
+   * Uses the OS's cryptographically secure RNG (via Rust's `OsRng`).
+   *
+   * @returns A {@link KeyPair} with private and public keys (32 bytes each)
+   */
+  generateKeyPair(): KeyPair {
+    const kp = native.curve25519GenerateKeypair() as {
+      private: Buffer;
+      public: Buffer;
+    };
+    return Object.freeze({
+      privateKey: kp.private,
+      publicKey: kp.public,
+    });
+  },
+
+  /**
+   * Derive the public key corresponding to a given private key.
+   *
+   * @param privateKey - 32-byte private key
+   * @returns The corresponding 32-byte public key
+   * @throws {ValidationError} If `privateKey` is not a 32-byte Buffer.
+   */
+  publicFromPrivate(privateKey: Buffer): Buffer {
+    assertBufferOfSize(privateKey, CURVE25519_PRIVATE_KEY_SIZE, 'privateKey');
+    // X25519 base scalar mult cannot fail with a 32-byte (clamped) scalar
+    return native.curve25519PublicFromPrivate(privateKey) as Buffer;
+  },
+
+  /**
+   * Perform X25519 Diffie-Hellman key agreement.
+   *
+   * Both parties run this with swapped (private, peer-public) arguments
+   * and obtain the same 32-byte shared secret.
+   *
+   * **⚠️ CRITICAL:** Do NOT use the returned secret directly as an
+   * encryption key. Always derive an actual key through HKDF:
+   *
+   * @example
+   * ```ts
+   * const shared = Curve25519.diffieHellman(myPriv, theirPub);
+   * const key = HKDF.derive(salt, shared, Buffer.from('aes-key'), 32);
+   * ```
+   *
+   * @param privateKey - Your 32-byte private key
+   * @param peerPublicKey - Peer's 32-byte public key
+   * @returns 32-byte shared secret
+   * @throws {ValidationError} If keys are not 32 bytes.
+   * @throws {CryptoError} If the operation fails.
+   */
+  diffieHellman(privateKey: Buffer, peerPublicKey: Buffer): Buffer {
+    assertBufferOfSize(privateKey, CURVE25519_PRIVATE_KEY_SIZE, 'privateKey');
+    assertBufferOfSize(peerPublicKey, CURVE25519_PUBLIC_KEY_SIZE, 'peerPublicKey');
+    // X25519 ECDH cannot fail with valid 32-byte inputs
+    return native.curve25519DiffieHellman(privateKey, peerPublicKey) as Buffer;
+  },
+
+  /**
+   * The size of a Curve25519 private key in bytes (32).
+   */
+  PRIVATE_KEY_SIZE: CURVE25519_PRIVATE_KEY_SIZE,
+
+  /**
+   * The size of a Curve25519 public key in bytes (32).
+   */
+  PUBLIC_KEY_SIZE: CURVE25519_PUBLIC_KEY_SIZE,
+
+  /**
+   * The size of an X25519 shared secret in bytes (32).
+   */
+  SHARED_SECRET_SIZE: CURVE25519_SHARED_SECRET_SIZE,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HKDF-SHA256
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * HKDF-SHA256 (RFC 5869) — HMAC-based Key Derivation Function.
+ *
+ * Provides cryptographic key derivation from high-entropy inputs (e.g., ECDH
+ * shared secrets) into arbitrary-length output keying material (OKM).
+ *
+ * @example
+ * ```ts
+ * // One-shot (recommended)
+ * const key = HKDF.derive(salt, sharedSecret, Buffer.from('aes-key'), 32);
+ *
+ * // Two-step (advanced)
+ * const prk = HKDF.extract(salt, ikm);
+ * const okm = HKDF.expand(prk, info, 64);
+ * ```
+ */
+export const HKDF = Object.freeze({
+  /**
+   * HKDF-Extract: produces a 32-byte pseudorandom key (PRK).
+   *
+   * @param salt - Optional salt (pass `Buffer.alloc(0)` if not available)
+   * @param ikm - Input keying material
+   * @returns 32-byte PRK
+   * @throws {ValidationError} If inputs are not Buffers.
+   */
+  extract(salt: Buffer, ikm: Buffer): Buffer {
+    assertBuffer(salt, 'salt');
+    assertBuffer(ikm, 'ikm');
+    return native.hkdfExtract(salt, ikm) as Buffer;
+  },
+
+  /**
+   * HKDF-Expand: produces `length` bytes of output keying material.
+   *
+   * @param prk - 32-byte pseudorandom key from {@link extract}
+   * @param info - Context-specific information (binds output to a usage)
+   * @param length - Desired output length (1 to 8160 bytes)
+   * @returns OKM of requested length
+   * @throws {ValidationError} If PRK is not 32 bytes or length is out of bounds.
+   */
+  expand(prk: Buffer, info: Buffer, length: number): Buffer {
+    assertBufferOfSize(prk, HKDF_PRK_SIZE, 'prk');
+    assertBuffer(info, 'info');
+    assertHkdfLength(length);
+    // Length already validated; native cannot fail with valid PRK + length <= 8160
+    return native.hkdfExpand(prk, info, length) as Buffer;
+  },
+
+  /**
+   * HKDF one-shot: extract + expand in a single call.
+   *
+   * Use this whenever possible — it's the standard HKDF API.
+   *
+   * @param salt - Optional salt
+   * @param ikm - Input keying material
+   * @param info - Context info
+   * @param length - Desired output length
+   * @returns OKM of requested length
+   */
+  derive(salt: Buffer, ikm: Buffer, info: Buffer, length: number): Buffer {
+    assertBuffer(salt, 'salt');
+    assertBuffer(ikm, 'ikm');
+    assertBuffer(info, 'info');
+    assertHkdfLength(length);
+    // Length already validated; native cannot fail with valid inputs
+    return native.hkdfDerive(salt, ikm, info, length) as Buffer;
+  },
+
+  /**
+   * Derive multiple keys from the same shared secret in a single call.
+   *
+   * Useful for deriving e.g., a send key AND a receive key simultaneously.
+   *
+   * @example
+   * ```ts
+   * const [sendKey, recvKey] = HKDF.deriveMultiple(
+   *   salt,
+   *   sharedSecret,
+   *   Buffer.from('signalis-channel-v1'),
+   *   [32, 32],
+   * );
+   * ```
+   *
+   * @param salt - Optional salt
+   * @param ikm - Input keying material
+   * @param info - Context info
+   * @param lengths - Array of output lengths
+   * @returns Array of derived keys, one per requested length
+   */
+  deriveMultiple(
+    salt: Buffer,
+    ikm: Buffer,
+    info: Buffer,
+    lengths: number[],
+  ): Buffer[] {
+    assertBuffer(salt, 'salt');
+    assertBuffer(ikm, 'ikm');
+    assertBuffer(info, 'info');
+    if (!Array.isArray(lengths) || lengths.length === 0) {
+      throw new TypeError('lengths must be a non-empty array of integers');
+    }
+
+    const total = lengths.reduce((sum, len) => sum + len, 0);
+    assertHkdfLength(total);
+
+    const okm = this.derive(salt, ikm, info, total);
+    const results: Buffer[] = [];
+    let offset = 0;
+    for (const len of lengths) {
+      results.push(okm.subarray(offset, offset + len));
+      offset += len;
+    }
+    return results;
+  },
+
+  /**
+   * Derive a key using an {@link HkdfParams} object (alternative API).
+   */
+  deriveFromParams(params: HkdfParams): Buffer {
+    return this.derive(params.salt, params.ikm, params.info, params.length);
+  },
+
+  /**
+   * The size of an HKDF PRK in bytes (32).
+   */
+  PRK_SIZE: HKDF_PRK_SIZE,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AES-256-GCM (Authenticated Encryption)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * AES-256-GCM authenticated encryption (AEAD).
+ *
+ * Combines confidentiality + authenticity in a single primitive.
+ *
+ * **⚠️ CRITICAL SECURITY RULES:**
+ * 1. Never reuse a (key, nonce) pair. Catastrophic failure.
+ * 2. Generate nonces with `secureRandom(12)` for each message.
+ * 3. After 2^32 messages with random nonces, rotate the key.
+ *
+ * @example
+ * ```ts
+ * import { AES_GCM, secureRandom } from '@brashkie/signalis-core';
+ *
+ * const key = secureRandom(32);
+ * const nonce = secureRandom(12);
+ * const plaintext = Buffer.from('Hello!');
+ *
+ * const ciphertext = AES_GCM.encrypt(key, nonce, plaintext);
+ * const decrypted = AES_GCM.decrypt(key, nonce, ciphertext);
+ * ```
+ */
+export const AES_GCM = Object.freeze({
+  /**
+   * Encrypt plaintext.
+   *
+   * Returns: ciphertext || 16-byte authentication tag (concatenated).
+   *
+   * @param key - 32-byte symmetric key
+   * @param nonce - 12-byte unique nonce (NEVER reuse with same key)
+   * @param plaintext - Data to encrypt
+   * @returns Ciphertext + auth tag (output is `plaintext.length + 16` bytes)
+   * @throws {ValidationError} On invalid sizes.
+   * @throws {CryptoError} If the operation fails.
+   */
+  encrypt(key: Buffer, nonce: Buffer, plaintext: Buffer): Buffer {
+    assertBufferOfSize(key, AES_256_KEY_SIZE, 'key');
+    assertBufferOfSize(nonce, AES_256_GCM_NONCE_SIZE, 'nonce');
+    assertBuffer(plaintext, 'plaintext');
+    // GCM encryption cannot fail with valid-sized inputs
+    return native.aes256GcmEncrypt(key, nonce, plaintext) as Buffer;
+  },
+
+  /**
+   * Decrypt ciphertext and verify authentication tag.
+   *
+   * @param key - 32-byte symmetric key (same as encryption)
+   * @param nonce - 12-byte nonce (same as encryption)
+   * @param ciphertext - Ciphertext || auth tag
+   * @returns Original plaintext
+   * @throws {ValidationError} On invalid sizes.
+   * @throws {AuthenticationError} If the tag is invalid (tampered or wrong key).
+   */
+  decrypt(key: Buffer, nonce: Buffer, ciphertext: Buffer): Buffer {
+    assertBufferOfSize(key, AES_256_KEY_SIZE, 'key');
+    assertBufferOfSize(nonce, AES_256_GCM_NONCE_SIZE, 'nonce');
+    assertBuffer(ciphertext, 'ciphertext');
+
+    if (ciphertext.length < AES_256_GCM_TAG_SIZE) {
+      throw new CryptoError(
+        `Ciphertext too short: must be at least ${AES_256_GCM_TAG_SIZE} bytes (tag size)`,
+        'aes_gcm_decrypt',
+      );
+    }
+
+    try {
+      return native.aes256GcmDecrypt(key, nonce, ciphertext) as Buffer;
+    } catch (e) {
+      throw new AuthenticationError(
+        `AES-256-GCM authentication failed: ${(e as Error).message}`,
+      );
+    }
+  },
+
+  /** Key size in bytes (32). */
+  KEY_SIZE: AES_256_KEY_SIZE,
+  /** Nonce size in bytes (12). */
+  NONCE_SIZE: AES_256_GCM_NONCE_SIZE,
+  /** Tag size in bytes (16). */
+  TAG_SIZE: AES_256_GCM_TAG_SIZE,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AES-256-CBC (Encryption only — pair with HMAC!)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * AES-256-CBC block cipher (NOT authenticated by itself).
+ *
+ * **⚠️ MUST be paired with HMAC** for integrity protection (encrypt-then-MAC).
+ *
+ * Prefer {@link AES_GCM} unless you need:
+ * - Legacy Signal Protocol media compatibility
+ * - Hardware that lacks GCM acceleration
+ */
+export const AES_CBC = Object.freeze({
+  /**
+   * Encrypt with PKCS#7 padding.
+   *
+   * @param key - 32-byte symmetric key
+   * @param iv - 16-byte initialization vector
+   * @param plaintext - Data to encrypt
+   * @returns Ciphertext (padded to nearest 16-byte block)
+   */
+  encrypt(key: Buffer, iv: Buffer, plaintext: Buffer): Buffer {
+    assertBufferOfSize(key, AES_256_KEY_SIZE, 'key');
+    assertBufferOfSize(iv, AES_256_CBC_IV_SIZE, 'iv');
+    assertBuffer(plaintext, 'plaintext');
+    // CBC encryption with PKCS#7 padding cannot fail given valid-sized inputs
+    return native.aes256CbcEncrypt(key, iv, plaintext) as Buffer;
+  },
+
+  /**
+   * Decrypt with PKCS#7 padding (no authentication).
+   *
+   * @param key - 32-byte symmetric key
+   * @param iv - 16-byte IV (same as encryption)
+   * @param ciphertext - Ciphertext
+   * @returns Original plaintext
+   * @throws {CryptoError} On padding errors.
+   */
+  decrypt(key: Buffer, iv: Buffer, ciphertext: Buffer): Buffer {
+    assertBufferOfSize(key, AES_256_KEY_SIZE, 'key');
+    assertBufferOfSize(iv, AES_256_CBC_IV_SIZE, 'iv');
+    assertBuffer(ciphertext, 'ciphertext');
+    try {
+      return native.aes256CbcDecrypt(key, iv, ciphertext) as Buffer;
+    } catch (e) {
+      throw new CryptoError(
+        `AES-256-CBC decryption failed: ${(e as Error).message}`,
+        'aes_cbc_decrypt',
+      );
+    }
+  },
+
+  /** Key size in bytes (32). */
+  KEY_SIZE: AES_256_KEY_SIZE,
+  /** IV size in bytes (16). */
+  IV_SIZE: AES_256_CBC_IV_SIZE,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HMAC-SHA256
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * HMAC-SHA256 message authentication code.
+ *
+ * Provides cryptographic authentication of arbitrary data with a shared key.
+ *
+ * @example
+ * ```ts
+ * const tag = HMAC.sha256(key, message);
+ * const valid = HMAC.verifySha256(key, message, tag);  // constant-time
+ * ```
+ */
+export const HMAC = Object.freeze({
+  /**
+   * Compute HMAC-SHA256 of `data` using `key`.
+   *
+   * @param key - Authentication key (any length)
+   * @param data - Data to authenticate
+   * @returns 32-byte HMAC tag
+   */
+  sha256(key: Buffer, data: Buffer): Buffer {
+    assertBuffer(key, 'key');
+    assertBuffer(data, 'data');
+    return native.hmacSha256(key, data) as Buffer;
+  },
+
+  /**
+   * Verify an HMAC-SHA256 tag in **constant time**.
+   *
+   * Always use this instead of `===` to prevent timing attacks.
+   *
+   * @param key - Authentication key
+   * @param data - Original data
+   * @param expectedTag - Tag to verify
+   * @returns `true` if tag matches, `false` otherwise
+   */
+  verifySha256(key: Buffer, data: Buffer, expectedTag: Buffer): boolean {
+    assertBuffer(key, 'key');
+    assertBuffer(data, 'data');
+    assertBuffer(expectedTag, 'expectedTag');
+    return native.hmacSha256Verify(key, data, expectedTag) as boolean;
+  },
+
+  /** Tag size in bytes (32). */
+  TAG_SIZE: HMAC_SHA256_TAG_SIZE,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SHA-256
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * SHA-256 cryptographic hash function.
+ *
+ * @example
+ * ```ts
+ * const digest = SHA256.hash(Buffer.from('hello'));
+ * ```
+ */
+export const SHA256 = Object.freeze({
+  /**
+   * Compute SHA-256 hash of `data`.
+   *
+   * @param data - Data to hash
+   * @returns 32-byte digest
+   */
+  hash(data: Buffer): Buffer {
+    assertBuffer(data, 'data');
+    return native.sha256(data) as Buffer;
+  },
+
+  /**
+   * Hash multiple Buffers concatenated together.
+   *
+   * Equivalent to `SHA256.hash(Buffer.concat([...]))` but slightly more
+   * efficient (avoids the intermediate concat).
+   */
+  hashAll(buffers: Buffer[]): Buffer {
+    if (!Array.isArray(buffers)) {
+      throw new TypeError('buffers must be an array');
+    }
+    for (let i = 0; i < buffers.length; i++) {
+      assertBuffer(buffers[i]!, `buffers[${i}]`);
+    }
+    return this.hash(Buffer.concat(buffers));
+  },
+
+  /** Output size in bytes (32). */
+  OUTPUT_SIZE: SHA256_OUTPUT_SIZE,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Library version
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * The version of the underlying Rust crate (from `Cargo.toml`).
+ */
+export const nativeVersion: string = (native.version as () => string)();

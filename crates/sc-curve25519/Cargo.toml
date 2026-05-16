@@ -1,0 +1,23 @@
+[package]
+name = "sc-curve25519"
+description = "Curve25519 ECDH operations for Signalis Core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+curve25519-dalek = { workspace = true }
+zeroize = { workspace = true }
+subtle = { workspace = true }
+rand = { workspace = true }
+rand_core = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+hex-literal = { workspace = true }

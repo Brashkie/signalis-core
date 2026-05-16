@@ -1,0 +1,65 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/sc-curve25519",
+    "crates/sc-hkdf",
+    "crates/sc-aes",
+    "crates/sc-hmac",
+    "crates/sc-sha256",
+    "crates/sc-node",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+authors = ["Brashkie (Hepein)"]
+license = "Apache-2.0"
+repository = "https://github.com/Brashkie/signalis-core"
+homepage = "https://github.com/Brashkie/signalis-core"
+keywords = ["cryptography", "signal-protocol", "e2e-encryption", "curve25519", "rust"]
+categories = ["cryptography"]
+
+[workspace.dependencies]
+# Crypto primitives (audited)
+curve25519-dalek = { version = "4.1", default-features = false, features = ["zeroize", "rand_core"] }
+ed25519-dalek = { version = "2.1", default-features = false, features = ["zeroize"] }
+hkdf = "0.12"
+hmac = "0.12"
+sha2 = "0.10"
+aes-gcm = "0.10"
+aes = "0.8"
+cbc = { version = "0.1", features = ["std"] }
+cipher = "0.4"
+
+# Util
+zeroize = { version = "1.7", features = ["zeroize_derive"] }
+subtle = "2.5"
+rand = "0.8"
+rand_core = { version = "0.6", features = ["std"] }
+thiserror = "1.0"
+
+# Internal
+sc-curve25519 = { version = "0.1.0", path = "crates/sc-curve25519" }
+sc-hkdf = { version = "0.1.0", path = "crates/sc-hkdf" }
+sc-aes = { version = "0.1.0", path = "crates/sc-aes" }
+sc-hmac = { version = "0.1.0", path = "crates/sc-hmac" }
+sc-sha256 = { version = "0.1.0", path = "crates/sc-sha256" }
+
+# Tests
+hex-literal = "0.4"
+
+# NAPI
+napi = { version = "2.16", default-features = false, features = ["napi9"] }
+napi-derive = "2.16"
+napi-build = "2.1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+opt-level = 1

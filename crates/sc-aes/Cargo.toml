@@ -1,0 +1,20 @@
+[package]
+name = "sc-aes"
+description = "AES-256-GCM and AES-256-CBC for Signalis Core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+aes-gcm = { workspace = true }
+aes = { workspace = true }
+cbc = { workspace = true }
+cipher = { workspace = true }
+zeroize = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+hex-literal = { workspace = true }

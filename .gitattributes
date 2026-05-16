@@ -1,0 +1,58 @@
+# Auto-detect text files and use LF for line endings
+* text=auto eol=lf
+
+# Source code
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.js        text eol=lf
+*.cjs       text eol=lf
+*.mjs       text eol=lf
+*.jsx       text eol=lf
+*.rs        text eol=lf
+*.toml      text eol=lf
+*.json      text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.md        text eol=lf
+*.html      text eol=lf
+*.css       text eol=lf
+
+# Shell scripts (must use LF)
+*.sh        text eol=lf
+
+# Batch / PowerShell (Windows)
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+*.ps1       text eol=crlf
+
+# Configuration
+.gitignore        text eol=lf
+.gitattributes    text eol=lf
+.editorconfig     text eol=lf
+.npmignore        text eol=lf
+
+# Binary files (no diff, no merge)
+*.node      binary
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.svg       binary
+*.zip       binary
+*.tar       binary
+*.tar.gz    binary
+*.tgz       binary
+*.exe       binary
+*.dll       binary
+*.so        binary
+*.dylib     binary
+*.wasm      binary
+
+# Files to exclude from language stats (linguist)
+crates/* linguist-language=Rust
+*.d.ts linguist-generated=true
+dist/* linguist-generated=true
+coverage/* linguist-generated=true
+index.js linguist-generated=true
+index.d.ts linguist-generated=true
