@@ -93,28 +93,19 @@
       "additional": [
         "x86_64-unknown-linux-musl",
         "aarch64-unknown-linux-gnu",
-        "i686-pc-windows-msvc",
-        "armv7-unknown-linux-gnueabihf",
         "aarch64-apple-darwin",
-        "aarch64-linux-android",
-        "aarch64-unknown-linux-musl",
         "aarch64-pc-windows-msvc"
       ]
     }
   },
   "optionalDependencies": {
-    "@brashkie/signalis-core-android-arm64": "0.1.0",
     "@brashkie/signalis-core-win32-x64-msvc": "0.1.0",
-    "@brashkie/signalis-core-win32-ia32-msvc": "0.1.0",
     "@brashkie/signalis-core-win32-arm64-msvc": "0.1.0",
-    "@brashkie/signalis-core-darwin-universal": "0.1.0",
     "@brashkie/signalis-core-darwin-x64": "0.1.0",
     "@brashkie/signalis-core-darwin-arm64": "0.1.0",
-    "@brashkie/signalis-core-linux-x64-musl": "0.1.0",
     "@brashkie/signalis-core-linux-x64-gnu": "0.1.0",
-    "@brashkie/signalis-core-linux-arm64-musl": "0.1.0",
-    "@brashkie/signalis-core-linux-arm64-gnu": "0.1.0",
-    "@brashkie/signalis-core-linux-arm-gnueabihf": "0.1.0"
+    "@brashkie/signalis-core-linux-x64-musl": "0.1.0",
+    "@brashkie/signalis-core-linux-arm64-gnu": "0.1.0"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.4",

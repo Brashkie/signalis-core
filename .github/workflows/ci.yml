@@ -32,7 +32,7 @@ concurrency:
 
 jobs:
   # ═══════════════════════════════════════════════════════════════════════════
-  # Rust unit tests (independent, runs first to fail fast)
+  # Rust unit tests (fail fast)
   # ═══════════════════════════════════════════════════════════════════════════
   rust-test:
     name: Rust tests
@@ -50,7 +50,7 @@ jobs:
         run: cargo test --workspace --exclude sc-node --verbose
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # Build native binaries for primary platforms
+  # Build native binaries for all 7 platforms
   # ═══════════════════════════════════════════════════════════════════════════
   build:
     needs: rust-test
@@ -76,7 +76,7 @@ jobs:
             target: aarch64-pc-windows-msvc
             build: npm run build:native -- --target aarch64-pc-windows-msvc
 
-          # Linux x64 GNU (with explicit Rust update in docker)
+          # Linux x64 GNU (Debian)
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
@@ -92,13 +92,18 @@ jobs:
               rustup update stable
               npm run build:native -- --target x86_64-unknown-linux-musl
 
-          # Linux ARM64 GNU
+          # Linux ARM64 GNU - Uses napi-rs cross image with built-in linker
+          # The docker image lts-debian-aarch64 has aarch64-linux-gnu-gcc pre-installed
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
             build: |
               rustup update stable
-              npm run build:native -- --target aarch64-unknown-linux-gnu --use-napi-cross
+              rustup target add aarch64-unknown-linux-gnu
+              export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+              export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc
+              export CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
+              npm run build:native -- --target aarch64-unknown-linux-gnu
 
     name: stable - ${{ matrix.settings.target }} - node@20
     runs-on: ${{ matrix.settings.host }}

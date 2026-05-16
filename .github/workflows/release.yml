@@ -20,6 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         settings:
+          # macOS
           - host: macos-latest
             target: x86_64-apple-darwin
             build: npm run build:native
@@ -28,6 +29,7 @@ jobs:
             target: aarch64-apple-darwin
             build: npm run build:native -- --target aarch64-apple-darwin
 
+          # Windows
           - host: windows-latest
             target: x86_64-pc-windows-msvc
             build: npm run build:native
@@ -36,6 +38,7 @@ jobs:
             target: aarch64-pc-windows-msvc
             build: npm run build:native -- --target aarch64-pc-windows-msvc
 
+          # Linux x64 GNU
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
@@ -43,6 +46,7 @@ jobs:
               rustup update stable
               npm run build:native -- --target x86_64-unknown-linux-gnu
 
+          # Linux x64 musl (Alpine)
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
@@ -50,12 +54,17 @@ jobs:
               rustup update stable
               npm run build:native -- --target x86_64-unknown-linux-musl
 
+          # Linux ARM64 GNU - With cross-compilation linker
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
             build: |
               rustup update stable
-              npm run build:native -- --target aarch64-unknown-linux-gnu --use-napi-cross
+              rustup target add aarch64-unknown-linux-gnu
+              export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+              export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc
+              export CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
+              npm run build:native -- --target aarch64-unknown-linux-gnu
 
     name: Build - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
