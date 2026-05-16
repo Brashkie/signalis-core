@@ -50,7 +50,6 @@ jobs:
               rustup update stable
               npm run build:native -- --target x86_64-unknown-linux-musl
 
-          # Linux ARM64 GNU - Install cross-compiler first
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
@@ -116,7 +115,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.settings.target }}
-          path: ${{ env.APP_NAME }}.*.node
+          path: |
+            ${{ env.APP_NAME }}.*.node
+            index.js
+            index.d.ts
           if-no-files-found: error
 
   publish:
@@ -134,8 +136,14 @@ jobs:
           cache: npm
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Install Rust (for napi-rs cli to generate index.js)
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Install dependencies
         run: npm install
+
+      - name: Build native to generate index.js + index.d.ts
+        run: npm run build:native
 
       - name: Build TypeScript
         run: npm run build:ts
