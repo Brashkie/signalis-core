@@ -49,10 +49,10 @@ sc-sha256 = { version = "0.1.0", path = "crates/sc-sha256" }
 # Tests
 hex-literal = "0.4"
 
-# NAPI
+# NAPI - Pinned to versions compatible with Rust 1.80+
 napi = { version = "2.16", default-features = false, features = ["napi9"] }
 napi-derive = "2.16"
-napi-build = "2.1"
+napi-build = "=2.1.3"
 
 [profile.release]
 opt-level = 3

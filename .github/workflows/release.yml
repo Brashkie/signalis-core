@@ -15,9 +15,6 @@ on:
       - 'v*'
 
 jobs:
-  # ═══════════════════════════════════════════════════════════════════════════
-  # Build for all platforms
-  # ═══════════════════════════════════════════════════════════════════════════
   build:
     strategy:
       fail-fast: false
@@ -25,62 +22,40 @@ jobs:
         settings:
           - host: macos-latest
             target: x86_64-apple-darwin
-            build: |
-              npm run build:native
-              strip -x *.node
+            build: npm run build:native
+
           - host: macos-latest
             target: aarch64-apple-darwin
-            build: |
-              npm run build:native -- --target aarch64-apple-darwin
-              strip -x *.node
+            build: npm run build:native -- --target aarch64-apple-darwin
+
           - host: windows-latest
             target: x86_64-pc-windows-msvc
             build: npm run build:native
-          - host: windows-latest
-            target: i686-pc-windows-msvc
-            build: |
-              npm run build:native -- --target i686-pc-windows-msvc
+
           - host: windows-latest
             target: aarch64-pc-windows-msvc
             build: npm run build:native -- --target aarch64-pc-windows-msvc
+
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
             build: |
-              npm run build:native -- --target x86_64-unknown-linux-gnu &&
-              strip *.node
+              rustup update stable
+              npm run build:native -- --target x86_64-unknown-linux-gnu
+
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
             build: |
-              npm run build:native -- --target x86_64-unknown-linux-musl &&
-              strip *.node
+              rustup update stable
+              npm run build:native -- --target x86_64-unknown-linux-musl
+
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
             build: |
-              npm run build:native -- --target aarch64-unknown-linux-gnu &&
-              aarch64-unknown-linux-gnu-strip *.node
-          - host: ubuntu-latest
-            target: aarch64-unknown-linux-musl
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
-            build: |-
-              rustup target add aarch64-unknown-linux-musl &&
-              npm run build:native -- --target aarch64-unknown-linux-musl &&
-              /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip *.node
-          - host: ubuntu-latest
-            target: armv7-unknown-linux-gnueabihf
-            setup: |
-              sudo apt-get update
-              sudo apt-get install gcc-arm-linux-gnueabihf -y
-            build: |
-              npm run build:native -- --target armv7-unknown-linux-gnueabihf &&
-              arm-linux-gnueabihf-strip *.node
-          - host: ubuntu-latest
-            target: aarch64-linux-android
-            build: |
-              npm run build:native -- --target aarch64-linux-android
-              ${ANDROID_NDK_LATEST_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip *.node
+              rustup update stable
+              npm run build:native -- --target aarch64-unknown-linux-gnu --use-napi-cross
 
     name: Build - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
@@ -112,12 +87,8 @@ jobs:
             target/
           key: ${{ matrix.settings.target }}-cargo-release
 
-      - name: Setup toolchain
-        run: ${{ matrix.settings.setup }}
-        if: ${{ matrix.settings.setup }}
-        shell: bash
-
       - name: Install dependencies
+        if: ${{ !matrix.settings.docker }}
         run: npm install
 
       - name: Build in docker
@@ -126,7 +97,9 @@ jobs:
         with:
           image: ${{ matrix.settings.docker }}
           options: '--user 0:0 -v ${{ github.workspace }}/.cargo-cache/git/db:/usr/local/cargo/git/db -v ${{ github.workspace }}/.cargo/registry/cache:/usr/local/cargo/registry/cache -v ${{ github.workspace }}/.cargo/registry/index:/usr/local/cargo/registry/index -v ${{ github.workspace }}:/build -w /build'
-          run: ${{ matrix.settings.build }}
+          run: |
+            npm install
+            ${{ matrix.settings.build }}
 
       - name: Build
         run: ${{ matrix.settings.build }}
@@ -169,31 +142,22 @@ jobs:
         with:
           path: artifacts
 
+      - name: List artifacts
+        run: ls -R artifacts
+        shell: bash
+
       - name: Move artifacts
         run: npm run artifacts
 
-      - name: List packages
+      - name: List npm dir
         run: ls -R ./npm
         shell: bash
 
-      - name: Publish all platform packages and main
+      - name: Publish to npm
         run: |
-          npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-          if git log -1 --pretty=%B | grep "^v[0-9]\+\.[0-9]\+\.[0-9]\+$";
-          then
-            echo "Publishing stable release"
-            npm publish --access public
-          elif git log -1 --pretty=%B | grep "^v[0-9]\+\.[0-9]\+\.[0-9]\+";
-          then
-            echo "Publishing pre-release"
-            npm publish --tag next --access public
-          else
-            echo "Not a release, skipping publish"
-            exit 1
-          fi
+          npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN
+          npm publish --access public
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
