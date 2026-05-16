@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/Brashkie/signalis-core/main/.github/assets/logo.png" alt="Signalis Core" width="180" />
+<img src="https://github.com/Brashkie/signalis-core/blob/main/media/logo.png" alt="Signalis Core" width="200" />
 
 # 🔐 Signalis Core
 
@@ -34,29 +34,46 @@ Built with **Rust** for safety and speed, exposed to Node.js via [napi-rs](https
 
 ## 📋 Table of Contents
 
-- [Features](#-features)
-- [Why Signalis Core?](#-why-signalis-core)
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [API Reference](#-api-reference)
-  - [Curve25519](#curve25519--x25519)
-  - [HKDF-SHA256](#hkdf-sha256)
-  - [AES-256-GCM](#aes-256-gcm)
-  - [AES-256-CBC](#aes-256-cbc)
-  - [HMAC-SHA256](#hmac-sha256)
-  - [SHA-256](#sha-256)
-  - [Utilities](#utilities)
-  - [Errors](#errors)
-- [Examples](#-examples)
-- [Architecture](#-architecture)
-- [Security](#-security)
-- [Performance](#-performance)
-- [Testing](#-testing)
-- [Building from Source](#-building-from-source)
-- [Roadmap](#-roadmap)
-- [Contributing](#-contributing)
-- [Acknowledgments](#-acknowledgments)
-- [License](#-license)
+- [🔐 Signalis Core](#-signalis-core)
+  - [✨ What is Signalis Core?](#-what-is-signalis-core)
+  - [📋 Table of Contents](#-table-of-contents)
+  - [🚀 Features](#-features)
+  - [🤔 Why Signalis Core?](#-why-signalis-core)
+    - [vs. Node's built-in `crypto`](#vs-nodes-built-in-crypto)
+    - [vs. Pure JavaScript libraries (`tweetnacl`, `libsodium-js`)](#vs-pure-javascript-libraries-tweetnacl-libsodium-js)
+    - [vs. Browser Web Crypto API](#vs-browser-web-crypto-api)
+  - [📥 Installation](#-installation)
+  - [⚡ Quick Start](#-quick-start)
+    - [Establish an end-to-end encrypted channel](#establish-an-end-to-end-encrypted-channel)
+    - [CommonJS](#commonjs)
+    - [Default Import](#default-import)
+  - [📚 API Reference](#-api-reference)
+    - [Curve25519 / X25519](#curve25519--x25519)
+    - [HKDF-SHA256](#hkdf-sha256)
+    - [AES-256-GCM](#aes-256-gcm)
+    - [AES-256-CBC](#aes-256-cbc)
+    - [HMAC-SHA256](#hmac-sha256)
+    - [SHA-256](#sha-256)
+    - [Utilities](#utilities)
+    - [Errors](#errors)
+  - [💡 Examples](#-examples)
+    - [Example: Secure file encryption](#example-secure-file-encryption)
+    - [Example: Signal-style "Triple DH"](#example-signal-style-triple-dh)
+  - [🏗️ Architecture](#️-architecture)
+    - [Build Output](#build-output)
+  - [🛡️ Security](#️-security)
+    - [Cryptographic Primitives](#cryptographic-primitives)
+    - [Security Properties](#security-properties)
+    - [Reporting a Vulnerability](#reporting-a-vulnerability)
+  - [⚡ Performance](#-performance)
+  - [🧪 Testing](#-testing)
+    - [Coverage](#coverage)
+    - [What's Tested](#whats-tested)
+  - [🔨 Building from Source](#-building-from-source)
+  - [🗺️ Roadmap](#️-roadmap)
+  - [🤝 Contributing](#-contributing)
+  - [🙏 Acknowledgments](#-acknowledgments)
+  - [📄 License](#-license)
 
 ---
 
