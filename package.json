@@ -19,6 +19,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
+    "preartifacts": "node scripts/create-npm-dirs.js",
     "artifacts": "napi artifacts",
     "build:native": "napi build --platform --release --cargo-cwd crates/sc-node --js index.js --dts index.d.ts",
     "build:native:debug": "napi build --platform --cargo-cwd crates/sc-node --js index.js --dts index.d.ts",
