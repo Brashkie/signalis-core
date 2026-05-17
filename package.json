@@ -43,7 +43,6 @@
     "format:rust": "cargo fmt --all",
     "clippy": "cargo clippy --workspace --all-targets -- -D warnings",
     "clean": "node -e \"const fs=require('fs');['dist','target','index.js','index.d.ts'].forEach(p=>fs.rmSync(p,{recursive:true,force:true}));fs.readdirSync('.').filter(f=>f.endsWith('.node')).forEach(f=>fs.rmSync(f,{force:true}));console.log('✓ Cleaned')\"",
-    "prepublishOnly": "napi prepublish -t npm",
     "version": "napi version"
   },
   "files": [
