@@ -21,7 +21,7 @@ assert.ok(sc.HMAC, 'HMAC should be exported');
 assert.ok(sc.SHA256, 'SHA256 should be exported');
 assert.ok(typeof sc.VERSION === 'string', 'VERSION should be exported as string');
 assert.ok(typeof sc.nativeVersion === 'string', 'nativeVersion should be exported');
-assert.equal(sc.VERSION, '0.1.0', 'VERSION should be 0.1.0');
+assert.equal(sc.VERSION, '0.2.0', 'VERSION should be 0.1.0');
 console.log('✅ All exports present');
 
 // ─── Test 2: Error classes are exported ──────────────────────────────────

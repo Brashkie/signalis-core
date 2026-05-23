@@ -46,6 +46,89 @@ pub fn curve25519_diffie_hellman(
     Ok(Buffer::from(shared.to_bytes().to_vec()))
 }
 
+// ─── Ed25519 (NEW in v0.2.0) ────────────────────────────────────────────────
+
+#[napi(object)]
+pub struct Ed25519KeyPair {
+    pub private: Buffer,
+    pub public: Buffer,
+}
+
+#[napi]
+pub fn ed25519_generate_keypair() -> Ed25519KeyPair {
+    let kp = sc_ed25519::KeyPair::generate();
+    Ed25519KeyPair {
+        private: Buffer::from(kp.private.to_bytes().to_vec()),
+        public: Buffer::from(kp.public.to_bytes().to_vec()),
+    }
+}
+
+#[napi]
+pub fn ed25519_keypair_from_seed(seed: Buffer) -> Result<Ed25519KeyPair> {
+    let kp = sc_ed25519::KeyPair::from_seed(&seed)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Ed25519KeyPair {
+        private: Buffer::from(kp.private.to_bytes().to_vec()),
+        public: Buffer::from(kp.public.to_bytes().to_vec()),
+    })
+}
+
+#[napi]
+pub fn ed25519_public_from_private(private_key: Buffer) -> Result<Buffer> {
+    let pub_bytes = sc_ed25519::public_from_private(&private_key)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(pub_bytes.to_vec()))
+}
+
+#[napi]
+pub fn ed25519_sign(private_key: Buffer, message: Buffer) -> Result<Buffer> {
+    let sig = sc_ed25519::sign(&private_key, &message)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(sig.to_vec()))
+}
+
+#[napi]
+pub fn ed25519_verify(public_key: Buffer, message: Buffer, signature: Buffer) -> Result<()> {
+    sc_ed25519::verify(&public_key, &message, &signature)
+        .map_err(|e| Error::new(Status::GenericFailure, e.to_string()))
+}
+
+#[napi]
+pub fn ed25519_verify_bool(public_key: Buffer, message: Buffer, signature: Buffer) -> bool {
+    sc_ed25519::verify_bool(&public_key, &message, &signature)
+}
+
+// ─── XEd25519 (NEW in v0.2.0) ───────────────────────────────────────────────
+
+#[napi]
+pub fn xed25519_sign(private_key: Buffer, message: Buffer) -> Result<Buffer> {
+    let sig = sc_xed25519::sign(&private_key, &message)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(sig.to_vec()))
+}
+
+#[napi]
+pub fn xed25519_sign_with_random(
+    private_key: Buffer,
+    message: Buffer,
+    random: Buffer,
+) -> Result<Buffer> {
+    let sig = sc_xed25519::sign_with_random(&private_key, &message, &random)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(sig.to_vec()))
+}
+
+#[napi]
+pub fn xed25519_verify(public_key: Buffer, message: Buffer, signature: Buffer) -> Result<()> {
+    sc_xed25519::verify(&public_key, &message, &signature)
+        .map_err(|e| Error::new(Status::GenericFailure, e.to_string()))
+}
+
+#[napi]
+pub fn xed25519_verify_bool(public_key: Buffer, message: Buffer, signature: Buffer) -> bool {
+    sc_xed25519::verify_bool(&public_key, &message, &signature)
+}
+
 // ─── HKDF ───────────────────────────────────────────────────────────────────
 
 #[napi]
@@ -125,6 +208,60 @@ pub fn aes_256_gcm_decrypt(
     let cipher = sc_aes::Aes256GcmCipher::new(&key_arr);
     let pt = cipher
         .decrypt(&nonce_arr, &ciphertext)
+        .map_err(|e| Error::new(Status::GenericFailure, e.to_string()))?;
+    Ok(Buffer::from(pt))
+}
+
+// ─── AES-256-GCM with AAD (NEW in v0.2.0) ───────────────────────────────────
+
+#[napi]
+pub fn aes_256_gcm_encrypt_with_aad(
+    key: Buffer,
+    nonce: Buffer,
+    plaintext: Buffer,
+    aad: Buffer,
+) -> Result<Buffer> {
+    if key.len() != 32 {
+        return Err(Error::new(Status::InvalidArg, "key must be 32 bytes"));
+    }
+    if nonce.len() != 12 {
+        return Err(Error::new(Status::InvalidArg, "nonce must be 12 bytes"));
+    }
+
+    let mut key_arr = [0u8; 32];
+    key_arr.copy_from_slice(&key);
+    let mut nonce_arr = [0u8; 12];
+    nonce_arr.copy_from_slice(&nonce);
+
+    let cipher = sc_aes::Aes256GcmCipher::new(&key_arr);
+    let ct = cipher
+        .encrypt_with_aad(&nonce_arr, &plaintext, &aad)
+        .map_err(|e| Error::new(Status::GenericFailure, e.to_string()))?;
+    Ok(Buffer::from(ct))
+}
+
+#[napi]
+pub fn aes_256_gcm_decrypt_with_aad(
+    key: Buffer,
+    nonce: Buffer,
+    ciphertext: Buffer,
+    aad: Buffer,
+) -> Result<Buffer> {
+    if key.len() != 32 {
+        return Err(Error::new(Status::InvalidArg, "key must be 32 bytes"));
+    }
+    if nonce.len() != 12 {
+        return Err(Error::new(Status::InvalidArg, "nonce must be 12 bytes"));
+    }
+
+    let mut key_arr = [0u8; 32];
+    key_arr.copy_from_slice(&key);
+    let mut nonce_arr = [0u8; 12];
+    nonce_arr.copy_from_slice(&nonce);
+
+    let cipher = sc_aes::Aes256GcmCipher::new(&key_arr);
+    let pt = cipher
+        .decrypt_with_aad(&nonce_arr, &ciphertext, &aad)
         .map_err(|e| Error::new(Status::GenericFailure, e.to_string()))?;
     Ok(Buffer::from(pt))
 }

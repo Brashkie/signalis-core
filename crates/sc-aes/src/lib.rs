@@ -6,7 +6,7 @@
 #![deny(unsafe_code)]
 #![deny(clippy::unwrap_used)]
 
-use aes_gcm::aead::{Aead, KeyInit};
+use aes_gcm::aead::{Aead, KeyInit, Payload};
 use aes_gcm::{Aes256Gcm, Nonce};
 use thiserror::Error;
 
@@ -63,6 +63,48 @@ impl Aes256GcmCipher {
     pub fn decrypt(&self, nonce: &[u8; 12], ciphertext: &[u8]) -> Result<Vec<u8>> {
         self.cipher
             .decrypt(Nonce::from_slice(nonce), ciphertext)
+            .map_err(|e| AesError::GcmError(e.to_string()))
+    }
+
+    /// Encrypt with 12-byte nonce and Additional Authenticated Data (AAD).
+    ///
+    /// NEW in v0.2.0. The `aad` is authenticated but not encrypted.
+    /// The same `aad` must be passed to [`Aes256GcmCipher::decrypt_with_aad`] to succeed.
+    pub fn encrypt_with_aad(
+        &self,
+        nonce: &[u8; 12],
+        plaintext: &[u8],
+        aad: &[u8],
+    ) -> Result<Vec<u8>> {
+        self.cipher
+            .encrypt(
+                Nonce::from_slice(nonce),
+                Payload {
+                    msg: plaintext,
+                    aad,
+                },
+            )
+            .map_err(|e| AesError::GcmError(e.to_string()))
+    }
+
+    /// Decrypt with 12-byte nonce and Additional Authenticated Data (AAD).
+    ///
+    /// NEW in v0.2.0. The same `aad` used during encryption must be provided,
+    /// otherwise decryption fails with a tag mismatch.
+    pub fn decrypt_with_aad(
+        &self,
+        nonce: &[u8; 12],
+        ciphertext: &[u8],
+        aad: &[u8],
+    ) -> Result<Vec<u8>> {
+        self.cipher
+            .decrypt(
+                Nonce::from_slice(nonce),
+                Payload {
+                    msg: ciphertext,
+                    aad,
+                },
+            )
             .map_err(|e| AesError::GcmError(e.to_string()))
     }
 }
@@ -142,5 +184,57 @@ mod tests {
         let pt = cipher.decrypt(&iv, &ct).expect("decrypt");
 
         assert_eq!(pt, plaintext);
+    }
+
+    // ───────────────────────────────────────────────────────────────────────
+    // NEW in v0.2.0: AAD tests
+    // ───────────────────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_gcm_with_aad_roundtrip() {
+        let key = [0x42u8; 32];
+        let nonce = [0x01u8; 12];
+        let plaintext = b"Secret message";
+        let aad = b"public_header=42";
+
+        let cipher = Aes256GcmCipher::new(&key);
+        let ct = cipher
+            .encrypt_with_aad(&nonce, plaintext, aad)
+            .expect("encrypt");
+        let pt = cipher.decrypt_with_aad(&nonce, &ct, aad).expect("decrypt");
+
+        assert_eq!(pt, plaintext);
+    }
+
+    #[test]
+    fn test_gcm_aad_mismatch_fails() {
+        let key = [0x42u8; 32];
+        let nonce = [0x01u8; 12];
+        let plaintext = b"msg";
+
+        let cipher = Aes256GcmCipher::new(&key);
+        let ct = cipher
+            .encrypt_with_aad(&nonce, plaintext, b"correct_aad")
+            .expect("encrypt");
+
+        // Decryption with different AAD must fail
+        let result = cipher.decrypt_with_aad(&nonce, &ct, b"wrong_aad");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_gcm_aad_empty_equals_no_aad() {
+        let key = [0x42u8; 32];
+        let nonce = [0x01u8; 12];
+        let plaintext = b"hello";
+
+        let cipher = Aes256GcmCipher::new(&key);
+        let ct1 = cipher.encrypt(&nonce, plaintext).expect("encrypt");
+        let ct2 = cipher
+            .encrypt_with_aad(&nonce, plaintext, b"")
+            .expect("encrypt");
+
+        // Empty AAD produces same ciphertext as no AAD
+        assert_eq!(ct1, ct2);
     }
 }

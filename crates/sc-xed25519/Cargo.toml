@@ -1,18 +1,15 @@
 [package]
-name = "sc-aes"
+name = "sc-xed25519"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "AES-256-GCM and AES-256-CBC for Signalis"
+description = "XEd25519 signatures using Curve25519 keys (Signal-style) for Signalis Core"
 
 [dependencies]
-aes-gcm = { workspace = true }
-aes = { workspace = true }
-cbc = { workspace = true }
-cipher = { workspace = true }
+curve25519-dalek = { workspace = true }
+sha2 = { workspace = true }
 rand = { workspace = true }
 zeroize = { workspace = true }
-subtle = { workspace = true }
 thiserror = { workspace = true }

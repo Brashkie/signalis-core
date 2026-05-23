@@ -50,6 +50,8 @@
 
 export {
   Curve25519,
+  Ed25519,
+  XEd25519,
   HKDF,
   AES_GCM,
   AES_CBC,
@@ -67,6 +69,7 @@ export type {
   PublicKey,
   PrivateKey,
   SharedSecret,
+  Signature,
   PseudoRandomKey,
   HkdfParams,
   AesGcmParams,
@@ -78,6 +81,7 @@ export {
   asPublicKey,
   asPrivateKey,
   asSharedSecret,
+  asSignature,
 } from './types';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -90,6 +94,7 @@ export {
   CryptoError,
   AuthenticationError,
   KeyDerivationError,
+  SignatureError,
   LengthError,
 } from './errors';
 
@@ -142,6 +147,16 @@ export {
   CURVE25519_PRIVATE_KEY_SIZE,
   CURVE25519_PUBLIC_KEY_SIZE,
   CURVE25519_SHARED_SECRET_SIZE,
+  // Ed25519 (NEW v0.2.0)
+  ED25519_PRIVATE_KEY_SIZE,
+  ED25519_PUBLIC_KEY_SIZE,
+  ED25519_SIGNATURE_SIZE,
+  ED25519_SEED_SIZE,
+  // XEd25519 (NEW v0.2.0)
+  XED25519_PRIVATE_KEY_SIZE,
+  XED25519_PUBLIC_KEY_SIZE,
+  XED25519_SIGNATURE_SIZE,
+  XED25519_RANDOM_SIZE,
   // HKDF
   HKDF_PRK_SIZE,
   HKDF_MAX_OUTPUT_SIZE,
@@ -168,13 +183,13 @@ export {
  *
  * Bumped on every release.
  */
-export const VERSION = '0.1.0' as const;
+export const VERSION = '0.2.0' as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Default export — Convenience namespace
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { Curve25519, HKDF, AES_GCM, AES_CBC, HMAC, SHA256, nativeVersion } from './core';
+import { Curve25519, Ed25519, XEd25519, HKDF, AES_GCM, AES_CBC, HMAC, SHA256, nativeVersion } from './core';
 import {
   secureRandom,
   randomNonce,
@@ -201,6 +216,8 @@ import {
 const SignalisCore = Object.freeze({
   // Crypto primitives
   Curve25519,
+  Ed25519,
+  XEd25519,
   HKDF,
   AES_GCM,
   AES_CBC,
@@ -219,7 +236,7 @@ const SignalisCore = Object.freeze({
   // Security
   constantTimeEqual,
   // Version
-  VERSION: '0.1.0' as const,
+  VERSION: '0.2.0' as const,
   nativeVersion,
 });
 

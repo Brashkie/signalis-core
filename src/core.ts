@@ -21,11 +21,20 @@ import {
   AES_256_CBC_IV_SIZE,
   HMAC_SHA256_TAG_SIZE,
   SHA256_OUTPUT_SIZE,
+  ED25519_PRIVATE_KEY_SIZE,
+  ED25519_PUBLIC_KEY_SIZE,
+  ED25519_SIGNATURE_SIZE,
+  ED25519_SEED_SIZE,
+  XED25519_PRIVATE_KEY_SIZE,
+  XED25519_PUBLIC_KEY_SIZE,
+  XED25519_SIGNATURE_SIZE,
+  XED25519_RANDOM_SIZE,
 } from './constants';
 
 import {
   CryptoError,
   AuthenticationError,
+  SignatureError,
 } from './errors';
 
 import {
@@ -37,6 +46,7 @@ import {
 import type {
   KeyPair,
   HkdfParams,
+  Signature,
 } from './types';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -354,6 +364,56 @@ export const AES_GCM = Object.freeze({
   NONCE_SIZE: AES_256_GCM_NONCE_SIZE,
   /** Tag size in bytes (16). */
   TAG_SIZE: AES_256_GCM_TAG_SIZE,
+
+  /**
+   * Encrypt with AES-256-GCM and Additional Authenticated Data (NEW in v0.2.0).
+   *
+   * AAD is authenticated but NOT encrypted. Useful for binding metadata
+   * (like message headers) to the ciphertext.
+   *
+   * @param key - 32-byte symmetric key
+   * @param nonce - 12-byte unique nonce
+   * @param plaintext - Data to encrypt
+   * @param aad - Additional authenticated data (any length, can be empty)
+   * @returns Ciphertext + auth tag
+   * @throws {ValidationError} On invalid sizes.
+   */
+  encryptWithAad(key: Buffer, nonce: Buffer, plaintext: Buffer, aad: Buffer): Buffer {
+    assertBufferOfSize(key, AES_256_KEY_SIZE, 'key');
+    assertBufferOfSize(nonce, AES_256_GCM_NONCE_SIZE, 'nonce');
+    assertBuffer(plaintext, 'plaintext');
+    assertBuffer(aad, 'aad');
+    return native.aes256GcmEncryptWithAad(key, nonce, plaintext, aad) as Buffer;
+  },
+
+  /**
+   * Decrypt with AES-256-GCM and AAD (NEW in v0.2.0).
+   *
+   * The same AAD used during encryption must be provided. Mismatch = failure.
+   *
+   * @throws {AuthenticationError} If tag verification fails (incl. AAD mismatch).
+   */
+  decryptWithAad(key: Buffer, nonce: Buffer, ciphertext: Buffer, aad: Buffer): Buffer {
+    assertBufferOfSize(key, AES_256_KEY_SIZE, 'key');
+    assertBufferOfSize(nonce, AES_256_GCM_NONCE_SIZE, 'nonce');
+    assertBuffer(ciphertext, 'ciphertext');
+    assertBuffer(aad, 'aad');
+
+    if (ciphertext.length < AES_256_GCM_TAG_SIZE) {
+      throw new CryptoError(
+        `Ciphertext too short: must be at least ${AES_256_GCM_TAG_SIZE} bytes (tag size)`,
+        'aes_gcm_decrypt_with_aad',
+      );
+    }
+
+    try {
+      return native.aes256GcmDecryptWithAad(key, nonce, ciphertext, aad) as Buffer;
+    } catch (e) {
+      throw new AuthenticationError(
+        `AES-256-GCM authentication failed: ${(e as Error).message}`,
+      );
+    }
+  },
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -507,6 +567,189 @@ export const SHA256 = Object.freeze({
 
   /** Output size in bytes (32). */
   OUTPUT_SIZE: SHA256_OUTPUT_SIZE,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Ed25519 (Standard Digital Signatures) — NEW in v0.2.0
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Ed25519 digital signatures (RFC 8032).
+ *
+ * Standard Ed25519 with deterministic signatures. Use when you want clean
+ * separation between signing and ECDH keys.
+ *
+ * @example
+ * ```ts
+ * import { Ed25519 } from '@brashkie/signalis-core';
+ *
+ * const keys = Ed25519.generateKeyPair();
+ * const sig = Ed25519.sign(keys.privateKey, Buffer.from('Hello'));
+ * Ed25519.verify(keys.publicKey, Buffer.from('Hello'), sig);
+ * ```
+ */
+export const Ed25519 = Object.freeze({
+  /**
+   * Generate a new random Ed25519 keypair.
+   */
+  generateKeyPair(): KeyPair {
+    const kp = native.ed25519GenerateKeypair() as {
+      private: Buffer;
+      public: Buffer;
+    };
+    return Object.freeze({
+      privateKey: kp.private,
+      publicKey: kp.public,
+    });
+  },
+
+  /**
+   * Derive a deterministic Ed25519 keypair from a 32-byte seed.
+   */
+  keyPairFromSeed(seed: Buffer): KeyPair {
+    assertBufferOfSize(seed, ED25519_SEED_SIZE, 'seed');
+    const kp = native.ed25519KeypairFromSeed(seed) as {
+      private: Buffer;
+      public: Buffer;
+    };
+    return Object.freeze({
+      privateKey: kp.private,
+      publicKey: kp.public,
+    });
+  },
+
+  /**
+   * Derive the public key from a private key.
+   */
+  publicFromPrivate(privateKey: Buffer): Buffer {
+    assertBufferOfSize(privateKey, ED25519_PRIVATE_KEY_SIZE, 'privateKey');
+    return native.ed25519PublicFromPrivate(privateKey) as Buffer;
+  },
+
+  /**
+   * Sign a message. Ed25519 signatures are deterministic (RFC 8032).
+   */
+  sign(privateKey: Buffer, message: Buffer): Signature {
+    assertBufferOfSize(privateKey, ED25519_PRIVATE_KEY_SIZE, 'privateKey');
+    assertBuffer(message, 'message');
+    return native.ed25519Sign(privateKey, message) as Signature;
+  },
+
+  /**
+   * Verify a signature. Throws on failure.
+   *
+   * @throws {SignatureError} If signature is invalid.
+   */
+  verify(publicKey: Buffer, message: Buffer, signature: Buffer): void {
+    assertBufferOfSize(publicKey, ED25519_PUBLIC_KEY_SIZE, 'publicKey');
+    assertBuffer(message, 'message');
+    assertBufferOfSize(signature, ED25519_SIGNATURE_SIZE, 'signature');
+    try {
+      native.ed25519Verify(publicKey, message, signature);
+    } catch (e) {
+      throw new SignatureError((e as Error).message);
+    }
+  },
+
+  /**
+   * Verify a signature. Returns boolean (does not throw).
+   */
+  verifyBool(publicKey: Buffer, message: Buffer, signature: Buffer): boolean {
+    if (!Buffer.isBuffer(publicKey) || publicKey.length !== ED25519_PUBLIC_KEY_SIZE) return false;
+    if (!Buffer.isBuffer(message)) return false;
+    if (!Buffer.isBuffer(signature) || signature.length !== ED25519_SIGNATURE_SIZE) return false;
+    return native.ed25519VerifyBool(publicKey, message, signature) as boolean;
+  },
+
+  /** Private key size in bytes (32). */
+  PRIVATE_KEY_SIZE: ED25519_PRIVATE_KEY_SIZE,
+  /** Public key size in bytes (32). */
+  PUBLIC_KEY_SIZE: ED25519_PUBLIC_KEY_SIZE,
+  /** Signature size in bytes (64). */
+  SIGNATURE_SIZE: ED25519_SIGNATURE_SIZE,
+  /** Seed size for deterministic keypair derivation (32). */
+  SEED_SIZE: ED25519_SEED_SIZE,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// XEd25519 (Signal-style signatures with Curve25519 keys) — NEW in v0.2.0
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * XEd25519 — sign messages using the SAME Curve25519 keypair used for ECDH.
+ *
+ * This is what Signal Protocol uses to maintain a single identity key.
+ * Signatures are non-deterministic (each call gives a different valid sig).
+ *
+ * @example
+ * ```ts
+ * import { Curve25519, XEd25519 } from '@brashkie/signalis-core';
+ *
+ * const identity = Curve25519.generateKeyPair();
+ *
+ * // Use for ECDH:
+ * const shared = Curve25519.diffieHellman(identity.privateKey, peerPublic);
+ *
+ * // SAME key used to sign:
+ * const sig = XEd25519.sign(identity.privateKey, message);
+ * XEd25519.verify(identity.publicKey, message, sig);
+ * ```
+ */
+export const XEd25519 = Object.freeze({
+  /**
+   * Sign a message using a Curve25519 private key. Uses OS RNG.
+   * Signatures are NOT deterministic (different each call).
+   */
+  sign(privateKey: Buffer, message: Buffer): Signature {
+    assertBufferOfSize(privateKey, XED25519_PRIVATE_KEY_SIZE, 'privateKey');
+    assertBuffer(message, 'message');
+    return native.xed25519Sign(privateKey, message) as Signature;
+  },
+
+  /**
+   * Sign with explicit 64-byte random nonce (for testing/reproducibility).
+   */
+  signWithRandom(privateKey: Buffer, message: Buffer, random: Buffer): Signature {
+    assertBufferOfSize(privateKey, XED25519_PRIVATE_KEY_SIZE, 'privateKey');
+    assertBuffer(message, 'message');
+    assertBufferOfSize(random, XED25519_RANDOM_SIZE, 'random');
+    return native.xed25519SignWithRandom(privateKey, message, random) as Signature;
+  },
+
+  /**
+   * Verify a XEd25519 signature. Throws on failure.
+   *
+   * @throws {SignatureError} If signature is invalid.
+   */
+  verify(publicKey: Buffer, message: Buffer, signature: Buffer): void {
+    assertBufferOfSize(publicKey, XED25519_PUBLIC_KEY_SIZE, 'publicKey');
+    assertBuffer(message, 'message');
+    assertBufferOfSize(signature, XED25519_SIGNATURE_SIZE, 'signature');
+    try {
+      native.xed25519Verify(publicKey, message, signature);
+    } catch (e) {
+      throw new SignatureError((e as Error).message);
+    }
+  },
+
+  /**
+   * Verify a XEd25519 signature. Returns boolean (does not throw).
+   */
+  verifyBool(publicKey: Buffer, message: Buffer, signature: Buffer): boolean {
+    if (!Buffer.isBuffer(publicKey) || publicKey.length !== XED25519_PUBLIC_KEY_SIZE) return false;
+    if (!Buffer.isBuffer(message)) return false;
+    if (!Buffer.isBuffer(signature) || signature.length !== XED25519_SIGNATURE_SIZE) return false;
+    return native.xed25519VerifyBool(publicKey, message, signature) as boolean;
+  },
+
+  /** Private key size in bytes (32, same as Curve25519). */
+  PRIVATE_KEY_SIZE: XED25519_PRIVATE_KEY_SIZE,
+  /** Public key size in bytes (32, same as Curve25519). */
+  PUBLIC_KEY_SIZE: XED25519_PUBLIC_KEY_SIZE,
+  /** Signature size in bytes (64). */
+  SIGNATURE_SIZE: XED25519_SIGNATURE_SIZE,
+  /** Random nonce size for signing (64). */
+  RANDOM_SIZE: XED25519_RANDOM_SIZE,
 });
 
 // ═══════════════════════════════════════════════════════════════════════════

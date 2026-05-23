@@ -102,6 +102,18 @@ export class KeyDerivationError extends CryptoError {
 }
 
 /**
+ * Thrown when a digital signature verification fails (NEW in v0.2.0).
+ *
+ * Used by Ed25519 and XEd25519 verification.
+ */
+export class SignatureError extends CryptoError {
+  constructor(message = 'Signature verification failed') {
+    super(message, 'verify_signature');
+    this.name = 'SignatureError';
+  }
+}
+
+/**
  * Thrown when the requested output length is invalid (e.g., HKDF > 8160 bytes).
  */
 export class LengthError extends ValidationError {

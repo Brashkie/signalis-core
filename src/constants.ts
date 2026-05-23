@@ -18,6 +18,38 @@ export const CURVE25519_PUBLIC_KEY_SIZE = 32;
 export const CURVE25519_SHARED_SECRET_SIZE = 32;
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Ed25519 (NEW in v0.2.0) — Standard digital signatures
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Size of an Ed25519 private key in bytes. */
+export const ED25519_PRIVATE_KEY_SIZE = 32;
+
+/** Size of an Ed25519 public key in bytes. */
+export const ED25519_PUBLIC_KEY_SIZE = 32;
+
+/** Size of an Ed25519 signature in bytes. */
+export const ED25519_SIGNATURE_SIZE = 64;
+
+/** Size of an Ed25519 seed for deterministic key derivation. */
+export const ED25519_SEED_SIZE = 32;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// XEd25519 (NEW in v0.2.0) — Signatures using Curve25519 keys (Signal style)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Size of an XEd25519 private key in bytes (same as Curve25519). */
+export const XED25519_PRIVATE_KEY_SIZE = 32;
+
+/** Size of an XEd25519 public key in bytes (same as Curve25519). */
+export const XED25519_PUBLIC_KEY_SIZE = 32;
+
+/** Size of an XEd25519 signature in bytes. */
+export const XED25519_SIGNATURE_SIZE = 64;
+
+/** Size of XEd25519 random nonce for signing (in bytes). */
+export const XED25519_RANDOM_SIZE = 64;
+
+// ═══════════════════════════════════════════════════════════════════════════
 // HKDF-SHA256
 // ═══════════════════════════════════════════════════════════════════════════
 

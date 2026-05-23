@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/Brashkie/signalis-core/blob/main/media/logo.png" alt="Signalis Core" width="200" />
+<img src="media/logo.png" alt="Signalis Core" width="200" />
 
 # 🔐 Signalis Core
 
@@ -13,7 +13,7 @@
 [![Rust](https://img.shields.io/badge/rust-1.80%2B-orange.svg)](https://www.rust-lang.org/)
 [![Node](https://img.shields.io/badge/node-%E2%89%A518-339933.svg)](https://nodejs.org/)
 [![Cobertura](https://img.shields.io/badge/coverage-99%25-brightgreen.svg)](#testing)
-[![Tests](https://img.shields.io/badge/tests-100%2B%20pasando-success.svg)](#testing)
+[![Tests](https://img.shields.io/badge/tests-269%2B%20pasando-success.svg)](#testing)
 
 [**English**](./README.md) · [**Español**](./README.es.md) · [Documentación](./docs) · [Roadmap](./ROADMAP.md) · [Changelog](./CHANGELOG.md)
 
@@ -29,6 +29,22 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 
 > **Parte del ecosistema [Hepein](https://github.com/Brashkie).**
 > La base para `@brashkie/signalis` (Protocolo Signal), `@brashkie/waproto` (Protocolo WhatsApp), y eventualmente una alternativa a Baileys construida desde cero.
+
+---
+
+## 🎉 Novedades en v0.2.0
+
+**v0.2.0 introduce firmas digitales y cifrado autenticado con AAD — totalmente retrocompatible con v0.1.0.**
+
+| Nuevo | Descripción |
+|-------|-------------|
+| 🆕 **Ed25519** | Firmas digitales estándar (RFC 8032) — determinísticas |
+| 🆕 **XEd25519** | Firmas estilo Signal con llaves Curve25519 — una llave de identidad para ECDH + firmar |
+| 🆕 **AES-GCM con AAD** | Datos Autenticados Adicionales para vincular metadatos al cifrado |
+| 🆕 **SignatureError** | Nueva clase de error tipada para fallos de firma |
+| 🆕 **Tipo Signature** | Tipo branded con helper `asSignature()` |
+
+Ver [MIGRATION.md](./MIGRATION.md) para detalles de upgrade (es un drop-in replacement).
 
 ---
 
@@ -57,14 +73,16 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 | Característica | Descripción |
 |----------------|-------------|
 | 🔥 **Velocidad Extrema** | Implementación nativa en Rust vía napi-rs (10-100x más rápido que JS puro) |
-| 🛡️ **Crypto Auditada** | Basada en `curve25519-dalek`, suite RustCrypto — librerías probadas en batalla |
+| 🛡️ **Crypto Auditada** | Basada en `curve25519-dalek`, `ed25519-dalek`, suite RustCrypto — librerías probadas en batalla |
+| ✍️ **Firmas Digitales** | Ed25519 (RFC 8032) y XEd25519 (estilo Signal) — **NUEVO v0.2.0** |
+| 🔐 **AEAD con AAD** | AES-256-GCM con Datos Autenticados Adicionales — **NUEVO v0.2.0** |
 | 📦 **Paquete Dual** | Funciona en proyectos CommonJS, ESM y TypeScript |
 | 🎯 **Tipado Estricto** | Definiciones TypeScript completas con tipos branded y clases de error |
-| ✅ **Vectores de Test** | Validado contra RFC 5869, RFC 7748, RFC 4231 y vectores NIST |
+| ✅ **Vectores de Test** | Validado contra RFC 5869, RFC 7748, RFC 8032, RFC 4231 y vectores NIST |
 | 🌍 **Multi-Plataforma** | Binarios pre-compilados para Windows, macOS, Linux (x64, ARM) |
 | 🔒 **Tiempo Constante** | Comparaciones resistentes a side-channel via crate `subtle` |
 | 🧹 **Auto-Borrado** | Secretos se borran de memoria automáticamente |
-| 📊 **Cobertura 99%+** | Suite de tests con 100+ aserciones |
+| 📊 **Cobertura 99%+** | Suite de tests con 269+ aserciones |
 | 📖 **Bien Documentada** | JSDoc completo + ejemplos inline para cada función |
 
 ---
@@ -205,6 +223,86 @@ Curve25519.PUBLIC_KEY_SIZE;       // 32
 Curve25519.SHARED_SECRET_SIZE;    // 32
 ```
 
+### Ed25519
+
+**NUEVO en v0.2.0.** Firmas digitales Ed25519 estándar (RFC 8032). Determinístico — la misma entrada siempre produce la misma firma.
+
+```typescript
+import { Ed25519, type KeyPair, type Signature } from '@brashkie/signalis-core';
+
+// Generar nuevo keypair para firmar
+const keys: KeyPair = Ed25519.generateKeyPair();
+// → { privateKey: Buffer(32), publicKey: Buffer(32) }
+
+// Determinístico desde una semilla de 32 bytes
+const fromSeed = Ed25519.keyPairFromSeed(seed);
+
+// Derivar pública desde privada
+const pub = Ed25519.publicFromPrivate(privateKey);
+
+// Firmar un mensaje → firma de 64 bytes
+const sig: Signature = Ed25519.sign(privateKey, message);
+
+// Verificar (lanza SignatureError si falla)
+Ed25519.verify(publicKey, message, sig);
+
+// Verificar (retorna boolean, no lanza)
+const ok = Ed25519.verifyBool(publicKey, message, sig);
+
+// Constantes
+Ed25519.PRIVATE_KEY_SIZE;    // 32
+Ed25519.PUBLIC_KEY_SIZE;     // 32
+Ed25519.SIGNATURE_SIZE;      // 64
+Ed25519.SEED_SIZE;           // 32
+```
+
+### XEd25519
+
+**NUEVO en v0.2.0.** Firmar con el **MISMO** keypair Curve25519 que se usa para ECDH. Esto es lo que el Protocolo Signal usa para las llaves de identidad.
+
+```typescript
+import { Curve25519, XEd25519 } from '@brashkie/signalis-core';
+
+// UN solo keypair para ECDH y firmar
+const identidad = Curve25519.generateKeyPair();
+
+// Para ECDH:
+const shared = Curve25519.diffieHellman(identidad.privateKey, peerPublic);
+
+// La MISMA llave para firmar:
+const sig = XEd25519.sign(identidad.privateKey, message);
+
+// Verificar con la MISMA llave pública Curve25519
+XEd25519.verify(identidad.publicKey, message, sig);
+
+// Las firmas XEd25519 NO son determinísticas (usan OS RNG)
+const sig1 = XEd25519.sign(identidad.privateKey, message);
+const sig2 = XEd25519.sign(identidad.privateKey, message);
+// sig1.equals(sig2) → false (intencionalmente probabilístico)
+
+// Para firmas determinísticas (tests), pasa el random de 64 bytes:
+const random = secureRandom(64);
+const detSig = XEd25519.signWithRandom(identidad.privateKey, message, random);
+
+// Verificar (boolean, no lanza)
+const ok = XEd25519.verifyBool(identidad.publicKey, message, sig);
+
+// Constantes
+XEd25519.PRIVATE_KEY_SIZE;   // 32 (igual que Curve25519)
+XEd25519.PUBLIC_KEY_SIZE;    // 32 (igual que Curve25519)
+XEd25519.SIGNATURE_SIZE;     // 64
+XEd25519.RANDOM_SIZE;        // 64
+```
+
+**¿Cuándo usar Ed25519 vs XEd25519?**
+
+| Necesitas | Usa |
+|-----------|-----|
+| Ed25519 estándar, determinístico, compatible con RFC 8032 | **Ed25519** |
+| Una sola llave de identidad para ECDH + firmar (estilo Signal) | **XEd25519** |
+| Firmas reproducibles desde semilla | **Ed25519** |
+| Compatibilidad con semántica del Protocolo Signal | **XEd25519** |
+
 ### HKDF-SHA256
 
 Derivación de claves según RFC 5869.
@@ -252,6 +350,26 @@ const ct = AES_GCM.encrypt(clave, nonce, textoPlano);
 // Descifrar + verificar tag
 const pt = AES_GCM.decrypt(clave, nonce, ct);
 // Lanza AuthenticationError si fue modificado
+```
+
+**Con Datos Autenticados Adicionales (AAD) — NUEVO en v0.2.0:**
+
+```typescript
+import { AES_GCM } from '@brashkie/signalis-core';
+
+// AAD se autentica pero NO se cifra — útil para cabeceras/metadatos
+const cabecera = Buffer.from('msg_id=42|emisor=alice');
+const cuerpo = Buffer.from('contenido cifrado del cuerpo');
+
+const ct = AES_GCM.encryptWithAad(clave, nonce, cuerpo, cabecera);
+
+// Descifrar — DEBE pasar el mismo AAD, o AuthenticationError
+const pt = AES_GCM.decryptWithAad(clave, nonce, ct, cabecera);
+
+// Modificar la cabecera (AAD) → falla
+const tampered = Buffer.from(cabecera);
+tampered[0] ^= 0xff;
+AES_GCM.decryptWithAad(clave, nonce, ct, tampered);  // lanza AuthenticationError
 ```
 
 > **⚠️ CRÍTICO:** Nunca reutilizar un par `(clave, nonce)`. Usa `randomNonce()` para cada mensaje, o usa un contador determinístico bajo la misma clave (máx 2³² mensajes).
@@ -335,6 +453,7 @@ import {
   CryptoError,              // Op crypto falló
   AuthenticationError,      // Verificación Tag/MAC falló (extiende CryptoError)
   KeyDerivationError,       // HKDF o similar falló (extiende CryptoError)
+  SignatureError,           // Verificación Ed25519/XEd25519 falló (extiende CryptoError) — NUEVO v0.2.0
   LengthError,              // Longitud fuera de rango (extiende ValidationError)
 } from '@brashkie/signalis-core';
 
@@ -345,6 +464,8 @@ try {
     console.error('¡Tampering detectado!');
   } else if (e instanceof ValidationError) {
     console.error(`Parámetro inválido: ${e.parameter}`);
+  } else if (e instanceof SignatureError) {
+    console.error('¡Firma inválida!');
   }
 }
 ```
@@ -356,10 +477,13 @@ try {
 El directorio `examples/` contiene demos completos funcionales:
 
 ```bash
-npm run example:cjs    # CommonJS (10 demos)
-npm run example:esm    # ESM (canal Alice ↔ Bob)
-npm run example:ts     # TypeScript (patrones type-safe)
-npm run examples       # Ejecutar los 3
+npm run example:cjs        # CommonJS (10 demos)
+npm run example:esm        # ESM (canal Alice ↔ Bob)
+npm run example:ts         # TypeScript (patrones type-safe)
+npm run example:signing    # Ed25519 + XEd25519 — NUEVO v0.2.0
+npm run example:aad        # AES-GCM con AAD — NUEVO v0.2.0
+npm run example:e2e        # Canal E2E completo — NUEVO v0.2.0
+npm run examples           # Ejecutar todos
 ```
 
 ### Ejemplo: Cifrado seguro de archivos
@@ -409,6 +533,66 @@ function tripleDH(IK_A_priv: Buffer, EK_A_priv: Buffer,
 }
 ```
 
+### Ejemplo: Firmar aserciones de identidad (NUEVO v0.2.0)
+
+```typescript
+import { Curve25519, XEd25519 } from '@brashkie/signalis-core';
+
+// Clave de identidad de largo plazo de Alice (Curve25519/XEd25519)
+const aliceIdentidad = Curve25519.generateKeyPair();
+
+// Alice genera una clave efímera para la sesión
+const aliceEfimera = Curve25519.generateKeyPair();
+
+// Alice firma su efímera con su identidad — prueba "esta efímera es mía"
+const pruebaAuth = XEd25519.sign(
+  aliceIdentidad.privateKey,
+  aliceEfimera.publicKey,
+);
+
+// Bob verifica la autorización:
+// 1. Tiene la clave pública de identidad de Alice de fuente confiable
+// 2. Recibe la efímera + firma
+try {
+  XEd25519.verify(aliceIdentidad.publicKey, aliceEfimera.publicKey, pruebaAuth);
+  // ✅ Bob confía que la efímera pertenece a Alice
+} catch {
+  // ❌ Mallory intentó MITM con su propia efímera
+}
+```
+
+### Ejemplo: Mensajes cifrados con cabeceras autenticadas (NUEVO v0.2.0)
+
+```typescript
+import { AES_GCM, secureRandom } from '@brashkie/signalis-core';
+
+const claveSesion = derivadaDesdeECDHyHKDF;
+
+function enviarMensaje(cuerpo: Buffer, msgId: number) {
+  const nonce = secureRandom(12);
+  const cabecera = Buffer.from(JSON.stringify({
+    msg_id: msgId,
+    timestamp: Date.now(),
+    emisor: 'alice',
+  }));
+
+  // Cabecera autenticada pero NO cifrada (receptor la necesita en claro)
+  const cifrado = AES_GCM.encryptWithAad(claveSesion, nonce, cuerpo, cabecera);
+
+  return { cabecera, nonce, cifrado };
+}
+
+function recibirMensaje(paquete: { cabecera: Buffer; nonce: Buffer; cifrado: Buffer }) {
+  // Falla la descifrado si SE MODIFICÓ ciphertext O cabecera
+  return AES_GCM.decryptWithAad(
+    claveSesion,
+    paquete.nonce,
+    paquete.cifrado,
+    paquete.cabecera,
+  );
+}
+```
+
 ---
 
 ## 🏗️ Arquitectura
@@ -416,18 +600,20 @@ function tripleDH(IK_A_priv: Buffer, EK_A_priv: Buffer,
 ```
 @brashkie/signalis-core
 │
-├── 🦀 Workspace Rust (5 crates)
+├── 🦀 Workspace Rust (8 crates)
 │   ├── sc-curve25519    →  Operaciones X25519 ECDH
+│   ├── sc-ed25519       →  Firmas Ed25519 (RFC 8032) — NUEVO v0.2.0
+│   ├── sc-xed25519      →  Firmas XEd25519 estilo Signal — NUEVO v0.2.0
 │   ├── sc-hkdf          →  Derivación HKDF-SHA256
-│   ├── sc-aes           →  AES-256-GCM y CBC
+│   ├── sc-aes           →  AES-256-GCM (con AAD) y CBC
 │   ├── sc-hmac          →  HMAC-SHA256 con verificación tiempo-constante
 │   ├── sc-sha256        →  Hashing SHA-256
 │   └── sc-node          →  Bindings NAPI-RS (cdylib)
 │
 └── 📦 Capa TypeScript
     ├── core.ts          →  Wrappers crypto con validación
-    ├── types.ts         →  Definiciones de tipos (KeyPair, etc.)
-    ├── errors.ts        →  Clases de error tipadas
+    ├── types.ts         →  Definiciones de tipos (KeyPair, Signature, etc.)
+    ├── errors.ts        →  Clases de error tipadas (incl. SignatureError)
     ├── validators.ts    →  Aserciones de input
     ├── utils.ts         →  Codificación + random + helpers
     ├── constants.ts     →  Constantes públicas (tamaños, límites)
@@ -443,8 +629,10 @@ function tripleDH(IK_A_priv: Buffer, EK_A_priv: Buffer,
 | Primitiva | Especificación | Implementación |
 |-----------|---------------|----------------|
 | X25519 | [RFC 7748](https://datatracker.ietf.org/doc/html/rfc7748) | [`curve25519-dalek`](https://github.com/dalek-cryptography/curve25519-dalek) |
+| Ed25519 | [RFC 8032](https://datatracker.ietf.org/doc/html/rfc8032) | [`ed25519-dalek`](https://github.com/dalek-cryptography/ed25519-dalek) — **NUEVO v0.2.0** |
+| XEd25519 | [Signal Spec](https://signal.org/docs/specifications/xeddsa/) | Impl custom sobre `curve25519-dalek` — **NUEVO v0.2.0** |
 | HKDF-SHA256 | [RFC 5869](https://datatracker.ietf.org/doc/html/rfc5869) | [`hkdf`](https://github.com/RustCrypto/KDFs) |
-| AES-256-GCM | [NIST SP 800-38D](https://csrc.nist.gov/publications/detail/sp/800-38d/final) | [`aes-gcm`](https://github.com/RustCrypto/AEADs) |
+| AES-256-GCM | [NIST SP 800-38D](https://csrc.nist.gov/publications/detail/sp/800-38d/final) | [`aes-gcm`](https://github.com/RustCrypto/AEADs) (con soporte AAD) |
 | AES-256-CBC | [NIST SP 800-38A](https://csrc.nist.gov/publications/detail/sp/800-38a/final) | [`aes`](https://github.com/RustCrypto/block-ciphers) |
 | HMAC-SHA256 | [RFC 2104](https://datatracker.ietf.org/doc/html/rfc2104) | [`hmac`](https://github.com/RustCrypto/MACs) |
 | SHA-256 | [FIPS 180-4](https://csrc.nist.gov/publications/detail/fips/180/4/final) | [`sha2`](https://github.com/RustCrypto/hashes) |
@@ -476,8 +664,13 @@ Benchmarks (Node 22, x86_64):
 |-----------|------------|-------------|
 | Generación keypair Curve25519 | ~50,000 ops/seg | **15×** más rápido que tweetnacl |
 | X25519 ECDH | ~25,000 ops/seg | **20×** más rápido |
+| Ed25519 firmar | ~25,000 ops/seg | **20×** más rápido — NUEVO v0.2.0 |
+| Ed25519 verificar | ~10,000 ops/seg | **15×** más rápido — NUEVO v0.2.0 |
+| XEd25519 firmar | ~20,000 ops/seg | — — NUEVO v0.2.0 |
+| XEd25519 verificar | ~10,000 ops/seg | — — NUEVO v0.2.0 |
 | Derivación HKDF (32 bytes) | ~500,000 ops/seg | **30×** más rápido |
 | AES-256-GCM cifrado (1 KB) | ~2 GB/seg | **80×** más rápido |
+| AES-GCM con AAD | <5% overhead vs sin AAD | — NUEVO v0.2.0 |
 | SHA-256 (1 KB) | ~3 GB/seg | **50×** más rápido |
 | HMAC-SHA256 (1 KB) | ~2.5 GB/seg | **40×** más rápido |
 
@@ -547,9 +740,10 @@ npm run examples
 Ver [ROADMAP.md](./ROADMAP.md) para detalles.
 
 **TL;DR:**
-- **v0.1** ✅ — Primitivas criptográficas (actual)
-- **v0.2** — Benchmarks, firmas Ed25519, soporte X448
-- **v1.0** — API estable, auditoría
+- **v0.1** ✅ — Primitivas criptográficas (Curve25519, HKDF, AES, HMAC, SHA-256)
+- **v0.2** ✅ — Ed25519, XEd25519, AES-GCM con AAD (release actual)
+- **v0.3** — Benchmarks, soporte X448, más vectores de test
+- **v1.0** — API estable, auditoría externa
 - **Luego:** [@brashkie/signalis](https://github.com/Brashkie/signalis) (X3DH + Double Ratchet)
 - **Luego:** [@brashkie/waproto](https://github.com/Brashkie/waproto) (Protocolo WhatsApp)
 - **Luego:** HepeinBaileys 2.0 (cliente WhatsApp completo desde cero)
@@ -574,9 +768,10 @@ Por favor también lee nuestro [Código de Conducta](./CODE_OF_CONDUCT.md).
 Construido sobre los hombros de gigantes:
 
 - **[curve25519-dalek](https://github.com/dalek-cryptography/curve25519-dalek)** — Curve25519 en Rust puro
+- **[ed25519-dalek](https://github.com/dalek-cryptography/ed25519-dalek)** — Ed25519 en Rust puro (agregado en v0.2.0)
 - **[RustCrypto](https://github.com/RustCrypto)** — `aes`, `hkdf`, `hmac`, `sha2`
 - **[napi-rs](https://napi.rs)** — Bindings Rust ↔ Node
-- **Signal Foundation** — [Especificaciones del protocolo](https://signal.org/docs/)
+- **Signal Foundation** — [Especificaciones del protocolo](https://signal.org/docs/) (incluyendo [XEd25519](https://signal.org/docs/specifications/xeddsa/))
 - **[tsup](https://tsup.egoist.dev/)** — Bundler dual ESM/CJS
 - **[Vitest](https://vitest.dev/)** — Test runner moderno
 

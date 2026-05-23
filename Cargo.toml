@@ -2,6 +2,8 @@
 resolver = "2"
 members = [
     "crates/sc-curve25519",
+    "crates/sc-ed25519",
+    "crates/sc-xed25519",
     "crates/sc-hkdf",
     "crates/sc-aes",
     "crates/sc-hmac",
@@ -10,7 +12,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.80"
 authors = ["Brashkie (Hepein)"]
@@ -39,12 +41,14 @@ rand = "0.8"
 rand_core = { version = "0.6", features = ["std"] }
 thiserror = "1.0"
 
-# Internal
-sc-curve25519 = { version = "0.1.0", path = "crates/sc-curve25519" }
-sc-hkdf = { version = "0.1.0", path = "crates/sc-hkdf" }
-sc-aes = { version = "0.1.0", path = "crates/sc-aes" }
-sc-hmac = { version = "0.1.0", path = "crates/sc-hmac" }
-sc-sha256 = { version = "0.1.0", path = "crates/sc-sha256" }
+# Internal crates
+sc-curve25519 = { version = "0.2.0", path = "crates/sc-curve25519" }
+sc-ed25519 = { version = "0.2.0", path = "crates/sc-ed25519" }
+sc-xed25519 = { version = "0.2.0", path = "crates/sc-xed25519" }
+sc-hkdf = { version = "0.2.0", path = "crates/sc-hkdf" }
+sc-aes = { version = "0.2.0", path = "crates/sc-aes" }
+sc-hmac = { version = "0.2.0", path = "crates/sc-hmac" }
+sc-sha256 = { version = "0.2.0", path = "crates/sc-sha256" }
 
 # Tests
 hex-literal = "0.4"

@@ -1,152 +1,191 @@
 # 🛡️ Security Policy
 
-## Reporting a Vulnerability
+## Supported Versions
 
-The Signalis Core team takes security seriously. We appreciate your efforts to responsibly disclose your findings.
+| Version | Supported | Status |
+|---------|-----------|--------|
+| 0.2.x | ✅ | Active development |
+| 0.1.x | ⚠️ | Security fixes only (until 2026-08-01) |
+| < 0.1 | ❌ | Not supported |
 
-### 🚨 Please DO NOT
+When a new minor version is released, the previous minor enters **3 months of security-only support**.
 
-- ❌ Open a public GitHub issue
-- ❌ Discuss the vulnerability publicly before it's resolved
-- ❌ Exploit the vulnerability beyond proof of concept
+---
 
-### ✅ Please DO
+## 🚨 Reporting a Vulnerability
 
-Report vulnerabilities using GitHub's [private vulnerability reporting](https://github.com/Brashkie/signalis-core/security/advisories/new).
+**Please do NOT open public GitHub issues for security bugs.**
 
-Please include:
+### Reporting Channels
 
-1. **Description** of the vulnerability
-2. **Steps to reproduce** (minimal proof of concept)
-3. **Impact assessment** (what an attacker could do)
-4. **Suggested fix** (if you have one)
-5. **Your name/handle** for credit (optional)
+Use one of these private channels:
+
+1. **GitHub Security Advisories** (preferred):
+   - https://github.com/Brashkie/signalis-core/security/advisories/new
+
+2. **Email**: brashkie@hepein.com
+   - PGP key: [download from GitHub profile]
+   - Subject: `[SECURITY] signalis-core: <brief description>`
+
+### What to Include
+
+To help us triage quickly, please provide:
+
+- **Description** of the vulnerability
+- **Affected versions** (if known)
+- **Reproduction steps** (proof of concept welcome)
+- **Impact assessment** (your view on severity)
+- **Suggested fix** (if any)
+- **Your contact info** (for follow-up)
 
 ### Response Timeline
 
-| Action | Timeline |
-|--------|----------|
-| Initial acknowledgment | Within **72 hours** |
-| Severity assessment | Within **7 days** |
-| Fix for critical issues | Within **30 days** |
-| Fix for high issues | Within **60 days** |
-| Fix for medium/low | Within **90 days** |
-| Public disclosure | After fix is released |
+| Severity | First response | Fix target |
+|----------|---------------|------------|
+| **Critical** (remote exploit, key recovery) | 24 hours | 7 days |
+| **High** (timing leaks, DoS) | 3 days | 30 days |
+| **Medium** (specific edge cases) | 7 days | Next minor release |
+| **Low** (theoretical, hard to exploit) | 14 days | Best effort |
+
+### Disclosure Process
+
+1. We acknowledge receipt within the timeframes above
+2. We investigate and confirm the issue
+3. We develop a fix in a private branch
+4. We prepare a security advisory
+5. We coordinate a release (typically 7-30 days from confirmation)
+6. **You are credited** in the advisory (unless you prefer anonymity)
+
+### Bounty Program
+
+We do **not** currently offer monetary bounties, but we:
+- Publicly credit researchers (with permission)
+- Provide signed acknowledgment letters
+- Add you to the contributors hall of fame
+
+If you're interested in funded research, please reach out.
 
 ---
 
-## Supported Versions
-
-We provide security updates for the following versions:
-
-| Version | Supported          |
-|---------|--------------------|
-| 0.x     | ✅ Active development |
-| Pre-release | ✅ Best effort   |
-
-Once we release **v1.0**, we'll maintain LTS branches for at least 12 months each.
-
----
-
-## Security Practices
+## 🔒 Security Considerations
 
 ### Cryptographic Implementation
 
-- **All primitives use audited Rust crates**:
-  - `curve25519-dalek` (audited by NCC Group)
-  - RustCrypto suite (`aes`, `hkdf`, `hmac`, `sha2`)
-- **No `unsafe` Rust** in our wrapper code (enforced by `#![deny(unsafe_code)]`)
-- **Constant-time** comparisons via the `subtle` crate
-- **Automatic zeroization** of sensitive data via the `zeroize` crate
-- **Test vectors from official RFCs/NIST** for every primitive
+All primitives use **audited, widely-deployed Rust crates**:
 
-### CI/CD Security
+| Primitive | Crate | Last audited |
+|-----------|-------|--------------|
+| Curve25519 | `curve25519-dalek` 4.x | 2023 (Cure53) |
+| Ed25519 | `ed25519-dalek` 2.x | 2023 (Cure53) |
+| AES-GCM | `aes-gcm` (RustCrypto) | 2022 |
+| SHA-256/HMAC | `sha2`, `hmac` (RustCrypto) | 2022 |
+| HKDF | `hkdf` (RustCrypto) | 2022 |
 
-- **`cargo audit`** runs on every PR (checks for known vulnerabilities)
-- **`clippy`** with `-D warnings` flag (catches common Rust issues)
-- **Multi-OS testing** (Linux, macOS, Windows)
-- **Multi-Node version testing** (18, 20, 22)
-- **Dependabot** monitors dependencies
-
-### Dependencies
-
-We follow a **minimal dependency** philosophy:
-
-- No transitive dependencies older than 6 months
-- All cryptographic deps from RustCrypto or dalek-cryptography
-- No deps with known security advisories (verified weekly)
-- All deps pinned to specific versions in `Cargo.lock`
-
----
-
-## Known Limitations
-
-Please be aware of the following:
+We do **not** implement primitives ourselves. Our work is:
+- Glue code (NAPI bindings)
+- Validation logic
+- Type safety wrappers
+- Test infrastructure
 
 ### Side-Channel Resistance
 
-While we use constant-time primitives where possible, **side-channel resistance ultimately depends on the underlying Rust crates**. We do not guarantee complete resistance to:
+The underlying Rust crates provide:
+- ✅ **Constant-time** scalar multiplication (Curve25519, Ed25519)
+- ✅ **Constant-time** equality checks (HMAC verify, point equality)
+- ✅ **AES-NI** hardware acceleration (when available)
+- ✅ **Zeroization** of private key buffers on drop
 
-- Cache-timing attacks
-- Power analysis attacks
-- Speculative execution attacks (Spectre/Meltdown)
+### Known Limitations
 
-For applications requiring formal side-channel protection, consider hardware security modules.
+#### XEd25519 (v0.2.0)
 
-### JavaScript Runtime Limitations
+XEd25519 implementation follows the [Signal specification](https://signal.org/docs/specifications/xeddsa/). While Signal has deployed this in production for years, our implementation is **new** and has not been independently audited.
 
-JavaScript runtimes (V8, JSCore) may keep copies of Buffer contents in:
+**Mitigation:** We use `curve25519-dalek`'s low-level primitives and `ed25519-dalek`'s `hazmat` API, both of which ARE audited. Only the high-level XEd25519 logic is ours.
 
-- GC buffers
-- Snapshot heaps
-- String interning pools
+If you require audited XEd25519, consider waiting for v1.0.0 (audited release).
 
-This means our `zeroize` utility provides **best-effort cleanup**, not cryptographic erasure on the JS side. **All sensitive secrets are zeroized properly on the Rust side**, which is the primary security boundary.
+#### Random Number Generation
 
-### Threat Model
+We use `OsRng` from the `rand` crate, which sources entropy from:
+- **Linux**: `getrandom()` syscall
+- **macOS**: `SecRandomCopyBytes`
+- **Windows**: `BCryptGenRandom`
+- **iOS**: same as macOS
 
-Signalis Core protects against:
+These are the standard, recommended sources. However:
+- 🚨 **VMs with poor entropy** can produce weak keys
+- 🚨 **Hibernation/snapshots** can reuse RNG state
 
-- ✅ Passive eavesdroppers (encryption)
-- ✅ Active man-in-the-middle (authenticated encryption)
-- ✅ Tampering of ciphertext (AES-GCM tag verification)
-- ✅ Timing attacks on MAC verification (constant-time compare)
+Mitigation: Generate keys after the system has accumulated entropy, especially in VM contexts.
 
-Signalis Core does NOT protect against:
+### Memory Safety
 
-- ❌ Compromised endpoints (malware on user's machine)
-- ❌ Compromised PRNG (we trust the OS CSPRNG)
-- ❌ Side-channel attacks beyond timing
-- ❌ Social engineering
-- ❌ Compromised dependencies before our level (Node.js, OS, hardware)
+- **Rust side**: Compile-time memory safety, zeroization on drop
+- **JS/Node side**: Buffers can be GC'd at any time
 
----
+If you need guaranteed key wiping in JS:
+```typescript
+// Explicit overwrite (best effort)
+function wipeKey(buf: Buffer) {
+  buf.fill(0);
+}
+```
 
-## Past Advisories
+**Note:** Due to JS GC behavior, this is best-effort. For highest assurance, use HSM/TPM-backed keys.
 
-No security advisories have been issued yet.
+### Network Security
 
-When vulnerabilities are fixed, advisories will be published at:
-https://github.com/Brashkie/signalis-core/security/advisories
+This library provides **cryptographic primitives only**. It does NOT:
+- ❌ Establish network connections
+- ❌ Implement TLS/HTTPS
+- ❌ Validate certificates
+- ❌ Manage sessions
 
----
-
-## Acknowledgments
-
-We thank the following researchers for responsibly disclosing security issues:
-
-*(None yet — be the first!)*
-
----
-
-## Cryptographic Disclosure
-
-This library implements cryptographic primitives. Export, import, and/or use of cryptographic software is restricted in some countries. Please check your local laws and regulations before using this library.
+Your application is responsible for transport-layer security.
 
 ---
 
-## Contact
+## 🚫 Out of Scope
 
-- **Security issues**: [Private vulnerability reporting](https://github.com/Brashkie/signalis-core/security/advisories/new)
-- **Bugs (non-security)**: [GitHub Issues](https://github.com/Brashkie/signalis-core/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Brashkie/signalis-core/discussions)
+The following are **not considered vulnerabilities**:
+
+- 🔵 **Performance issues** (open as feature request)
+- 🔵 **API ergonomics** (open as feature request)
+- 🔵 **Documentation typos** (open as PR)
+- 🔵 **Behavior on invalid inputs** that throws clear errors (working as intended)
+- 🔵 **Side-channels in user code** (your code's responsibility)
+- 🔵 **Issues in dependencies** (report upstream, but tell us too)
+- 🔵 **Hypothetical attacks** without practical demonstration
+
+---
+
+## 🏆 Hall of Fame
+
+We thank the following security researchers for responsible disclosure:
+
+_(Empty for now — be the first!)_
+
+---
+
+## 📚 Security Resources
+
+For learning about cryptographic security:
+
+- 📘 [Cryptography Engineering](https://www.schneier.com/books/cryptography-engineering/) — Schneier, Ferguson, Kohno
+- 📘 [Real-World Cryptography](https://www.manning.com/books/real-world-cryptography) — David Wong
+- 📘 [Serious Cryptography](https://nostarch.com/seriouscrypto) — Jean-Philippe Aumasson
+- 🌐 [Signal Protocol Documentation](https://signal.org/docs/)
+- 🌐 [Cryptography Stack Exchange](https://crypto.stackexchange.com/)
+
+---
+
+## 🔄 Policy Updates
+
+This policy may be updated. Significant changes will be:
+1. Committed to the repo with a clear commit message
+2. Announced in the next release notes
+3. Posted in GitHub Discussions
+
+**Last updated:** May 2026
+**Next scheduled review:** November 2026

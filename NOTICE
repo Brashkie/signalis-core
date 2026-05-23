@@ -1,12 +1,110 @@
-Signalis Core
-Copyright 2026 Brashkie (Hepein)
+@brashkie/signalis-core
+Copyright 2026 Brashkie / Hepein Oficial
 
-This product includes software developed by:
-  - The curve25519-dalek authors (https://github.com/dalek-cryptography/curve25519-dalek)
-  - The RustCrypto project (https://github.com/RustCrypto)
-  - The napi-rs project (https://github.com/napi-rs/napi-rs)
+This product is licensed under the Apache License, Version 2.0
+(see LICENSE file in the project root).
 
-Signal Protocol design © Open Whisper Systems / Signal Foundation.
-This implementation is independent and not affiliated with Signal Foundation.
+═══════════════════════════════════════════════════════════════════════════
+Third-party software included
+═══════════════════════════════════════════════════════════════════════════
 
-For the full list of dependencies and their licenses, see Cargo.lock and package.json.
+This product includes the following third-party software, licensed under
+their respective terms:
+
+─── Rust Dependencies ─────────────────────────────────────────────────────
+
+curve25519-dalek 4.x
+  Copyright (c) Isis Lovecruft, Henry de Valence
+  Licensed under BSD-3-Clause
+  https://github.com/dalek-cryptography/curve25519-dalek
+
+ed25519-dalek 2.x
+  Copyright (c) Isis Lovecruft
+  Licensed under BSD-3-Clause
+  https://github.com/dalek-cryptography/ed25519-dalek
+
+x25519-dalek 2.x
+  Copyright (c) Isis Lovecruft, Henry de Valence
+  Licensed under BSD-3-Clause
+  https://github.com/dalek-cryptography/x25519-dalek
+
+aes-gcm (RustCrypto)
+  Copyright (c) RustCrypto Developers
+  Licensed under Apache-2.0 OR MIT
+  https://github.com/RustCrypto/AEADs
+
+aes (RustCrypto)
+  Copyright (c) RustCrypto Developers
+  Licensed under Apache-2.0 OR MIT
+  https://github.com/RustCrypto/block-ciphers
+
+cbc (RustCrypto)
+  Copyright (c) RustCrypto Developers
+  Licensed under Apache-2.0 OR MIT
+  https://github.com/RustCrypto/block-modes
+
+sha2 (RustCrypto)
+  Copyright (c) RustCrypto Developers
+  Licensed under Apache-2.0 OR MIT
+  https://github.com/RustCrypto/hashes
+
+hmac (RustCrypto)
+  Copyright (c) RustCrypto Developers
+  Licensed under Apache-2.0 OR MIT
+  https://github.com/RustCrypto/MACs
+
+hkdf (RustCrypto)
+  Copyright (c) RustCrypto Developers
+  Licensed under Apache-2.0 OR MIT
+  https://github.com/RustCrypto/KDFs
+
+zeroize
+  Copyright (c) Tony Arcieri
+  Licensed under Apache-2.0 OR MIT
+  https://github.com/RustCrypto/utils/tree/master/zeroize
+
+subtle
+  Copyright (c) Isis Lovecruft, Henry de Valence
+  Licensed under BSD-3-Clause
+  https://github.com/dalek-cryptography/subtle
+
+rand
+  Licensed under Apache-2.0 OR MIT
+  https://github.com/rust-random/rand
+
+thiserror
+  Copyright (c) David Tolnay
+  Licensed under Apache-2.0 OR MIT
+  https://github.com/dtolnay/thiserror
+
+─── NAPI Bindings ────────────────────────────────────────────────────────
+
+napi-rs
+  Copyright (c) napi-rs contributors
+  Licensed under MIT
+  https://github.com/napi-rs/napi-rs
+
+═══════════════════════════════════════════════════════════════════════════
+Specifications referenced
+═══════════════════════════════════════════════════════════════════════════
+
+- RFC 7748 — Elliptic Curves for Security
+- RFC 8032 — Edwards-Curve Digital Signature Algorithm (EdDSA)
+- RFC 5869 — HMAC-based Extract-and-Expand Key Derivation Function (HKDF)
+- NIST SP 800-38D — AES-GCM
+- FIPS 180-4 — Secure Hash Standard (SHA-256)
+- FIPS 198-1 — HMAC
+
+Signal Protocol specifications:
+- X3DH: https://signal.org/docs/specifications/x3dh/
+- Double Ratchet: https://signal.org/docs/specifications/doubleratchet/
+- XEdDSA: https://signal.org/docs/specifications/xeddsa/
+
+═══════════════════════════════════════════════════════════════════════════
+
+The full text of all third-party licenses can be found in the respective
+crate repositories linked above, or obtained by running:
+
+  cargo about generate licenses.html
+
+For questions about licensing, contact: brashkie@hepein.com

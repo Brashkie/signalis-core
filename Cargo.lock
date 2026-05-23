@@ -152,6 +152,7 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "curve25519-dalek-derive",
+ "digest",
  "fiat-crypto",
  "rand_core",
  "rustc_version",
@@ -179,6 +180,28 @@ dependencies = [
  "block-buffer",
  "crypto-common",
  "subtle",
+]
+
+[[package]]
+name = "ed25519"
+version = "2.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "115531babc129696a58c64a4fef0a8bf9e9698629fb97e9e40767d235cfbcd53"
+dependencies = [
+ "signature",
+]
+
+[[package]]
+name = "ed25519-dalek"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70e796c081cee67dc755e1a36a0a172b897fab85fc3f6bc48307991f64e4eca9"
+dependencies = [
+ "curve25519-dalek",
+ "ed25519",
+ "sha2",
+ "subtle",
+ "zeroize",
 ]
 
 [[package]]
@@ -452,20 +475,21 @@ dependencies = [
 
 [[package]]
 name = "sc-aes"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "aes",
  "aes-gcm",
  "cbc",
  "cipher",
- "hex-literal",
+ "rand",
+ "subtle",
  "thiserror",
  "zeroize",
 ]
 
 [[package]]
 name = "sc-curve25519"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "curve25519-dalek",
  "hex-literal",
@@ -477,8 +501,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "sc-ed25519"
+version = "0.2.0"
+dependencies = [
+ "ed25519-dalek",
+ "hex-literal",
+ "rand",
+ "thiserror",
+ "zeroize",
+]
+
+[[package]]
 name = "sc-hkdf"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "hex-literal",
  "hkdf",
@@ -489,7 +524,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hmac"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "hex-literal",
  "hmac",
@@ -500,24 +535,38 @@ dependencies = [
 
 [[package]]
 name = "sc-node"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
+ "rand",
  "sc-aes",
  "sc-curve25519",
+ "sc-ed25519",
  "sc-hkdf",
  "sc-hmac",
  "sc-sha256",
+ "sc-xed25519",
 ]
 
 [[package]]
 name = "sc-sha256"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "hex-literal",
  "sha2",
+]
+
+[[package]]
+name = "sc-xed25519"
+version = "0.2.0"
+dependencies = [
+ "curve25519-dalek",
+ "rand",
+ "sha2",
+ "thiserror",
+ "zeroize",
 ]
 
 [[package]]
@@ -536,6 +585,12 @@ dependencies = [
  "cpufeatures",
  "digest",
 ]
+
+[[package]]
+name = "signature"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77549399552de45a898a580c1b41d445bf730df867cc44e6c0233bbc4b8329de"
 
 [[package]]
 name = "subtle"

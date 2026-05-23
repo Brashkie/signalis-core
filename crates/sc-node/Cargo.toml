@@ -1,13 +1,11 @@
 [package]
 name = "sc-node"
-description = "NAPI-RS Node.js bindings for Signalis Core"
 version.workspace = true
 edition.workspace = true
-rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
-publish = false
+description = "NAPI bindings for signalis-core"
 
 [lib]
 crate-type = ["cdylib"]
@@ -15,8 +13,12 @@ crate-type = ["cdylib"]
 [dependencies]
 napi = { workspace = true }
 napi-derive = { workspace = true }
+rand = { workspace = true }
 
+# Internal crates
 sc-curve25519 = { workspace = true }
+sc-ed25519 = { workspace = true }
+sc-xed25519 = { workspace = true }
 sc-hkdf = { workspace = true }
 sc-aes = { workspace = true }
 sc-hmac = { workspace = true }

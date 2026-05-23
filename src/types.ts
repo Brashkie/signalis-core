@@ -51,6 +51,15 @@ export type PrivateKey = Buffer & { readonly __brand?: 'PrivateKey' };
 export type SharedSecret = Buffer & { readonly __brand?: 'SharedSecret' };
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Signatures (NEW in v0.2.0)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * A digital signature (64 bytes) — Ed25519 or XEd25519.
+ */
+export type Signature = Buffer & { readonly __brand?: 'Signature' };
+
+// ═══════════════════════════════════════════════════════════════════════════
 // HKDF
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -137,4 +146,11 @@ export function asPrivateKey(buf: Buffer): PrivateKey {
  */
 export function asSharedSecret(buf: Buffer): SharedSecret {
   return buf as SharedSecret;
+}
+
+/**
+ * Brand a Buffer as a {@link Signature} (NEW in v0.2.0).
+ */
+export function asSignature(buf: Buffer): Signature {
+  return buf as Signature;
 }

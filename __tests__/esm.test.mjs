@@ -56,7 +56,7 @@ assert.ok(AES_GCM, 'AES_GCM should be importable');
 assert.ok(AES_CBC, 'AES_CBC should be importable');
 assert.ok(HMAC, 'HMAC should be importable');
 assert.ok(SHA256, 'SHA256 should be importable');
-assert.equal(VERSION, '0.1.0', 'VERSION should be 0.1.0');
+assert.equal(VERSION, '0.2.0', 'VERSION should be 0.1.0');
 assert.ok(typeof nativeVersion === 'string', 'nativeVersion should be string');
 console.log('✅ All named imports work');
 
@@ -77,7 +77,7 @@ console.log('✅ Constants importable');
 
 // ─── Test 4: Default import works ────────────────────────────────────────
 assert.ok(sc.Curve25519, 'Default import should have Curve25519');
-assert.equal(sc.VERSION, '0.1.0');
+assert.equal(sc.VERSION, '0.2.0');
 console.log('✅ Default import works');
 
 // ─── Test 5: Curve25519 ECDH ─────────────────────────────────────────────
