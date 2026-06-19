@@ -32,25 +32,94 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 
 ---
 
-## 🎉 Novedades en v0.2.0
+## 🎉 Novedades en v0.3.0
 
-**v0.2.0 introduce firmas digitales y cifrado autenticado con AAD — totalmente retrocompatible con v0.1.0.**
+**v0.3.0 trae soporte Android + ChaCha20-Poly1305 — totalmente retrocompatible con v0.2.0.**
 
 | Nuevo | Descripción |
 |-------|-------------|
-| 🆕 **Ed25519** | Firmas digitales estándar (RFC 8032) — determinísticas |
-| 🆕 **XEd25519** | Firmas estilo Signal con llaves Curve25519 — una llave de identidad para ECDH + firmar |
-| 🆕 **AES-GCM con AAD** | Datos Autenticados Adicionales para vincular metadatos al cifrado |
-| 🆕 **SignatureError** | Nueva clase de error tipada para fallos de firma |
-| 🆕 **Tipo Signature** | Tipo branded con helper `asSignature()` |
+| 🆕 **Android arm64-v8a** | Binario nativo para celulares Android modernos (React Native, Termux) |
+| 🆕 **Android armv7** | Binario nativo para dispositivos Android más viejos (Android 4.4+) |
+| 🆕 **ChaCha20-Poly1305** | AEAD según RFC 8439 — 2-3× más rápido que AES-GCM en ARM sin AES-NI |
+| 🆕 **`constantTimeEq()`** | Comparación de Buffer en tiempo constante (para verificar MAC/firmas) |
+| 🆕 **`nativeSecureRandom()`** | CSPRNG basado en OS vía Rust (alternativa a `secureRandom` JS-side) |
+| 🆕 **Crate `sc-utils`** | Helpers utilitarios públicos (random, constant_time_eq, secure_zeroize) |
+| 🆕 **CI: gate cargo-audit** | Dependencias transitivas vulnerables ahora bloquean PRs automáticamente |
+
+### Ejemplo rápido: ChaCha20-Poly1305
+
+```ts
+import { ChaCha20Poly1305, secureRandom } from '@brashkie/signalis-core';
+
+const key = secureRandom(32);
+const nonce = secureRandom(12);
+
+const ct = ChaCha20Poly1305.encrypt(key, nonce, Buffer.from('¡Hola!'));
+const pt = ChaCha20Poly1305.decrypt(key, nonce, ct);  // → "¡Hola!"
+
+// Con Datos Autenticados Adicionales
+const aad = Buffer.from('metadata del header');
+const ct2 = ChaCha20Poly1305.encryptWithAad(key, nonce, plaintext, aad);
+const pt2 = ChaCha20Poly1305.decryptWithAad(key, nonce, ct2, aad);
+```
+
+### ¿Por qué usar ChaCha20-Poly1305 en lugar de AES-GCM?
+
+Usá **AES-GCM** cuando corras en:
+- Servidores x86_64 (Intel/AMD con hardware AES-NI)
+- Desktops modernos
+- CPUs ARM nuevos con Extensiones Cripto ARMv8
+
+Usá **ChaCha20-Poly1305** cuando corras en:
+- Celulares Android (la mayoría no tiene AES-NI)
+- IoT / dispositivos embebidos
+- Cualquier cosa sin hardware AES acelerado
+
+**Ambos tienen garantías de seguridad idénticas.** La diferencia es puramente de rendimiento, dependiendo de si tu target tiene hardware AES.
 
 Ver [MIGRATION.md](./MIGRATION.md) para detalles de upgrade (es un drop-in replacement).
+
+---
+
+## 🌍 Plataformas Soportadas
+
+`@brashkie/signalis-core` envía binarios nativos pre-compilados para **9 plataformas** vía `optionalDependencies` de npm. El binario correcto se descarga automáticamente según tu sistema operativo + arquitectura.
+
+| SO | Arquitectura | Sub-paquete | Estado |
+|----|--------------|-------------|--------|
+| 🐧 Linux | x64 (glibc) | `signalis-core-linux-x64-gnu` | ✅ |
+| 🐧 Linux | x64 (musl) | `signalis-core-linux-x64-musl` | ✅ |
+| 🐧 Linux | arm64 (glibc) | `signalis-core-linux-arm64-gnu` | ✅ |
+| 🍎 macOS | x64 (Intel) | `signalis-core-darwin-x64` | ✅ |
+| 🍎 macOS | arm64 (Apple Silicon) | `signalis-core-darwin-arm64` | ✅ |
+| 🪟 Windows | x64 | `signalis-core-win32-x64-msvc` | ✅ |
+| 🪟 Windows | arm64 | `signalis-core-win32-arm64-msvc` | ✅ |
+| 🤖 Android | arm64-v8a | `signalis-core-android-arm64` | 🆕 v0.3.0 |
+| 🤖 Android | armv7 | `signalis-core-android-arm-eabi` | 🆕 v0.3.0 |
+
+Próximas plataformas en v0.4.0: **iOS arm64**, **WASM (navegadores)**, **FreeBSD x64**.
+
+### Instalación en Android
+
+El mismo `npm install` funciona en cualquier entorno Node.js corriendo en Android, incluyendo:
+- **Termux** en celulares Android (`pkg install nodejs`)
+- **React Native** con target Android
+- Apps con **NodeJS-Mobile**
+- Builds personalizados de Node embebido para IoT
+
+```bash
+# En Android (Termux por ejemplo):
+pkg install nodejs
+npm install @brashkie/signalis-core
+# → npm descarga automáticamente signalis-core-android-arm64
+```
 
 ---
 
 ## 📋 Tabla de Contenido
 
 - [Características](#-características)
+- [Plataformas Soportadas](#-plataformas-soportadas)
 - [¿Por qué Signalis Core?](#-por-qué-signalis-core)
 - [Instalación](#-instalación)
 - [Inicio Rápido](#-inicio-rápido)
@@ -79,7 +148,7 @@ Ver [MIGRATION.md](./MIGRATION.md) para detalles de upgrade (es un drop-in repla
 | 📦 **Paquete Dual** | Funciona en proyectos CommonJS, ESM y TypeScript |
 | 🎯 **Tipado Estricto** | Definiciones TypeScript completas con tipos branded y clases de error |
 | ✅ **Vectores de Test** | Validado contra RFC 5869, RFC 7748, RFC 8032, RFC 4231 y vectores NIST |
-| 🌍 **Multi-Plataforma** | Binarios pre-compilados para Windows, macOS, Linux (x64, ARM) |
+| 🌍 **Multi-Plataforma** | Binarios pre-compilados para Windows, macOS, Linux (x64, ARM) + **Android arm64/armv7** |
 | 🔒 **Tiempo Constante** | Comparaciones resistentes a side-channel via crate `subtle` |
 | 🧹 **Auto-Borrado** | Secretos se borran de memoria automáticamente |
 | 📊 **Cobertura 99%+** | Suite de tests con 269+ aserciones |
@@ -392,6 +461,43 @@ if (HMAC.verifySha256(macKey, concat([iv, ct]), tag)) {
 }
 ```
 
+### ChaCha20-Poly1305 🆕
+
+Cifrado autenticado según RFC 8439. Alternativa a AES-GCM, más rápido en ARM sin AES-NI.
+
+```typescript
+import { ChaCha20Poly1305, secureRandom } from '@brashkie/signalis-core';
+
+const clave = secureRandom(32);    // ChaCha20Poly1305.KEY_SIZE
+const nonce = secureRandom(12);    // ChaCha20Poly1305.NONCE_SIZE
+
+// Cifrado/descifrado básico (sin AAD)
+const ct = ChaCha20Poly1305.encrypt(clave, nonce, textoplano);
+const pt = ChaCha20Poly1305.decrypt(clave, nonce, ct);
+
+// Con Datos Autenticados Adicionales
+const aad = Buffer.from('header público');
+const ct2 = ChaCha20Poly1305.encryptWithAad(clave, nonce, textoplano, aad);
+const pt2 = ChaCha20Poly1305.decryptWithAad(clave, nonce, ct2, aad);
+
+// Constantes
+ChaCha20Poly1305.KEY_SIZE;     // 32
+ChaCha20Poly1305.NONCE_SIZE;   // 12
+ChaCha20Poly1305.TAG_SIZE;     // 16 (anexado al ciphertext)
+```
+
+**Rendimiento vs AES-GCM:**
+
+| Target | Ganador | Por qué |
+|--------|---------|---------|
+| Server x86_64 (AES-NI) | AES-GCM | Aceleración por hardware |
+| Desktop moderno (AES-NI) | AES-GCM | Aceleración por hardware |
+| Android arm64 (sin ARMv8 crypto) | **ChaCha20-Poly1305** | CPU puro, ChaCha es más rápido |
+| IoT / embebido | **ChaCha20-Poly1305** | No requiere hardware AES |
+| Apple Silicon (serie M) | Cualquiera (parejos) | Ambos bien optimizados |
+
+**Seguridad:** ChaCha20-Poly1305 y AES-GCM tienen propiedades de seguridad equivalentes. La decisión es puramente sobre rendimiento en tu target.
+
 ### HMAC-SHA256
 
 Autenticación de mensajes.
@@ -433,7 +539,9 @@ import {
   fromBase64Url,
 
   // Seguridad
-  constantTimeEqual,  // (a, b) → boolean (timing-safe)
+  constantTimeEqual,    // (a, b) → boolean (timing-safe, JS-side)
+  constantTimeEq,       // 🆕 v0.3.0 — igual pero vía Rust side
+  nativeSecureRandom,   // 🆕 v0.3.0 — CSPRNG del OS vía Rust (vs node:crypto)
 
   // Operaciones Buffer
   concat,          // (buffers[]) → Buffer
@@ -441,6 +549,14 @@ import {
   zeroize,         // (buf) → void (borra in-place)
 } from '@brashkie/signalis-core';
 ```
+
+#### ¿Cuándo usar `constantTimeEq` vs `constantTimeEqual`?
+
+Ambos comparan en tiempo constante. `constantTimeEqual` usa la semántica de `Buffer.compare` de JavaScript (implementación JS-side). `constantTimeEq` (v0.3.0) pasa por la crate auditada `subtle::ConstantTimeEq` de Rust. Las dos son seguras — usá `constantTimeEq` si querés asegurarte de que tu camino timing-safe sea el mismo que usa el resto de la librería internamente.
+
+#### ¿Cuándo usar `nativeSecureRandom` vs `secureRandom`?
+
+`secureRandom(n)` usa `crypto.randomBytes()` de Node. `nativeSecureRandom(n)` (v0.3.0) pasa por `OsRng` de Rust (que llama directamente a `getrandom`/`BCryptGenRandom`/`SecRandomCopyBytes`). Ambos son criptográficamente seguros. Usá `nativeSecureRandom` si querés una sola superficie de auditoría para entropía en todo tu stack.
 
 ### Errores
 

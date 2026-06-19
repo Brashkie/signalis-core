@@ -10,8 +10,7 @@ fn rfc5869_test_case_1() {
     let info = hex!("f0f1f2f3f4f5f6f7f8f9");
     let length = 42;
 
-    let expected_prk =
-        hex!("077709362c2e32df0ddc3f0dc47bba6390b6c73bb50f9c3122ec844ad7c2b3e5");
+    let expected_prk = hex!("077709362c2e32df0ddc3f0dc47bba6390b6c73bb50f9c3122ec844ad7c2b3e5");
     let expected_okm = hex!(
         "3cb25f25faacd57a90434f64d0362f2a"
         "2d2d0a90cf1a5a4c5db02d56ecc4c5bf"
@@ -32,8 +31,7 @@ fn rfc5869_test_case_3() {
     let info = b"";
     let length = 42;
 
-    let expected_prk =
-        hex!("19ef24a32c717b167f33a91d6f648bdf96596776afdb6377ac434c1c293ccb04");
+    let expected_prk = hex!("19ef24a32c717b167f33a91d6f648bdf96596776afdb6377ac434c1c293ccb04");
     let expected_okm = hex!(
         "8da4e775a563c18f715f802a063c5a31"
         "b8a11f5c5ee1879ec3454e5f3c738d2d"

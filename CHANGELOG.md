@@ -5,6 +5,77 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-06-17
+
+### ✨ Added — Multi-Platform Expansion + New Primitives
+
+**Focus: Android support + AEAD alternative for ARM-heavy deployments.**
+
+#### 🆕 New crates
+- **`sc-chacha20poly1305`** — RFC 8439 ChaCha20-Poly1305 AEAD
+  - Encrypt/decrypt with optional AAD
+  - Same API shape as `sc-aes`'s GCM helpers
+  - 2-3× faster than AES-GCM on ARM without AES-NI hardware
+  - Full RFC 8439 test vector compliance
+- **`sc-utils`** — public utility helpers
+  - `secure_random(buf)` / `random_bytes(size)` — OS-backed CSPRNG
+  - `constant_time_eq(a, b)` — timing-safe comparison
+  - `secure_zeroize(buf)` — guaranteed-not-elided buffer wipe
+  - 16 MiB cap on single random allocation (DoS guard)
+
+#### 🆕 New build targets
+- ✅ `aarch64-linux-android` — Android arm64-v8a (React Native, Termux, modern phones)
+- ✅ `armv7-linux-androideabi` — Android armv7 (older devices, IoT)
+
+#### 🆕 Public JS API
+- `ChaCha20Poly1305` namespace mirroring `AES_GCM`:
+  - `.encrypt(key, nonce, plaintext)`
+  - `.decrypt(key, nonce, ciphertext)`
+  - `.encryptWithAad(key, nonce, plaintext, aad)`
+  - `.decryptWithAad(key, nonce, ciphertext, aad)`
+  - Constants: `KEY_SIZE`, `NONCE_SIZE`, `TAG_SIZE`
+- `constantTimeEq(a, b)` — timing-safe Buffer comparison
+- `nativeSecureRandom(size)` — OS-backed CSPRNG via the native side
+
+#### 🆕 CI
+- `cargo-audit` pre-merge gate (fails PRs introducing vulnerable transitive deps)
+- Build matrix now includes both Android targets
+
+### 🔄 Changed
+- Workspace `Cargo.toml`: added `chacha20poly1305 = "0.10"` to shared deps
+- `sc-node` re-exports new primitives + helpers from the new crates
+- `package.json` lists `android-arm64` + `android-arm-eabi` as optional sub-packages
+
+### ✅ Compatibility
+**100% backwards compatible with v0.2.0.** All existing APIs (`Curve25519`,
+`Ed25519`, `XEd25519`, `HKDF`, `AES_GCM`, `AES_CBC`, `HMAC`, `SHA256`) are
+unchanged. `signalis@0.6.0` (the TypeScript Signal Protocol wrapper) continues
+to work without modifications.
+
+### 📦 New install footprint (Android)
+
+```bash
+npm i @brashkie/signalis-core
+# On Android (Termux / React Native), npm/yarn will automatically pull:
+#   @brashkie/signalis-core-android-arm64   (or)
+#   @brashkie/signalis-core-android-arm-eabi
+```
+
+### 🔒 Security
+- All new code follows the same audit-friendly patterns as v0.2.0
+- ChaCha20-Poly1305 backed by RustCrypto's `chacha20poly1305@0.10`
+- `secure_random` panics (not silently degrades) if OS RNG is unavailable
+- `constant_time_eq` backed by `subtle@2.5`
+- `secure_zeroize` backed by `zeroize@1.7`
+
+### 📋 What's next (v0.4.0)
+- iOS arm64 target
+- WASM target (browsers, via `wasm-bindgen`)
+- PBKDF2 + Argon2id (for the upcoming `signalis-vault` package)
+- Benchmark suite (criterion)
+
+---
+
 ## [0.2.0] — 2026-05-22
 
 ### ✨ Added

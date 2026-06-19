@@ -168,3 +168,7 @@ temp/
 
 # Local Husky hooks
 .husky/_
+
+npm/
+# Local Android cross-compile config (per-developer)
+.cargo/config.toml

@@ -40,8 +40,7 @@ impl Hkdf {
             return Err(HkdfError::InvalidLength(length));
         }
 
-        let hk = HkdfImpl::<Sha256>::from_prk(prk)
-            .map_err(|_| HkdfError::InvalidLength(length))?;
+        let hk = HkdfImpl::<Sha256>::from_prk(prk).map_err(|_| HkdfError::InvalidLength(length))?;
         let mut okm = vec![0u8; length];
         hk.expand(info, &mut okm)
             .map_err(|_| HkdfError::InvalidLength(length))?;

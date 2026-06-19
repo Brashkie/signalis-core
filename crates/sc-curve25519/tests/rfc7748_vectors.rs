@@ -43,8 +43,7 @@ fn rfc7748_alice_bob_ecdh() {
     let bob_public_expected =
         hex!("de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f");
 
-    let shared_expected =
-        hex!("4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742");
+    let shared_expected = hex!("4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742");
 
     let alice_priv = PrivateKey::try_from_bytes(&alice_private).expect("valid");
     let alice_kp = KeyPair::from_private(alice_priv);

@@ -62,16 +62,14 @@ mod tests {
     #[test]
     fn nist_test_vector_empty() {
         let result = sha256(b"");
-        let expected =
-            hex!("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+        let expected = hex!("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
         assert_eq!(result, expected);
     }
 
     #[test]
     fn nist_test_vector_abc() {
         let result = sha256(b"abc");
-        let expected =
-            hex!("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+        let expected = hex!("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
         assert_eq!(result, expected);
     }
 

@@ -57,6 +57,14 @@ export {
   AES_CBC,
   HMAC,
   SHA256,
+  // NEW in v0.3.0
+  ChaCha20Poly1305,
+  constantTimeEq,
+  nativeSecureRandom,
+  CHACHA20_POLY1305_KEY_SIZE,
+  CHACHA20_POLY1305_NONCE_SIZE,
+  CHACHA20_POLY1305_TAG_SIZE,
+  // ────────────────
   nativeVersion,
 } from './core';
 

@@ -54,8 +54,7 @@ mod tests {
     fn rfc4231_test_case_1() {
         let key = hex!("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b");
         let data = b"Hi There";
-        let expected =
-            hex!("b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7");
+        let expected = hex!("b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7");
 
         let result = hmac_sha256(&key, data);
         assert_eq!(result, expected);

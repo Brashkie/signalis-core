@@ -760,3 +760,170 @@ export const XEd25519 = Object.freeze({
  * The version of the underlying Rust crate (from `Cargo.toml`).
  */
 export const nativeVersion: string = (native.version as () => string)();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ChaCha20-Poly1305 (NEW in v0.3.0)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** ChaCha20-Poly1305 key size (bytes). */
+export const CHACHA20_POLY1305_KEY_SIZE = 32;
+/** ChaCha20-Poly1305 nonce size (bytes). */
+export const CHACHA20_POLY1305_NONCE_SIZE = 12;
+/** Poly1305 authentication tag size (bytes), appended to ciphertext. */
+export const CHACHA20_POLY1305_TAG_SIZE = 16;
+
+/**
+ * ChaCha20-Poly1305 authenticated encryption with associated data (AEAD).
+ *
+ * RFC 8439-compliant alternative to AES-GCM. Same security guarantees,
+ * but typically 2-3x faster on platforms without AES-NI hardware
+ * (Android arm64-v8a without crypto extensions, IoT, older embedded).
+ *
+ * On servers and modern desktops with AES-NI, AES-GCM is usually faster
+ * — pick the cipher based on your deployment target.
+ *
+ * @example
+ * ```ts
+ * import { ChaCha20Poly1305, secureRandom } from '@brashkie/signalis-core';
+ *
+ * const key = secureRandom(32);
+ * const nonce = secureRandom(12);
+ * const ct = ChaCha20Poly1305.encrypt(key, nonce, Buffer.from('secret'));
+ * const pt = ChaCha20Poly1305.decrypt(key, nonce, ct);
+ * ```
+ */
+export const ChaCha20Poly1305 = Object.freeze({
+  /**
+   * Encrypt + authenticate `plaintext`.
+   *
+   * @param key 32-byte key
+   * @param nonce 12-byte nonce — MUST be unique per (key, plaintext)
+   * @param plaintext data to encrypt
+   * @returns ciphertext || tag (16 bytes appended)
+   */
+  encrypt(key: Buffer, nonce: Buffer, plaintext: Buffer): Buffer {
+    if (!Buffer.isBuffer(key) || key.length !== CHACHA20_POLY1305_KEY_SIZE) {
+      throw new RangeError(`key must be ${CHACHA20_POLY1305_KEY_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(nonce) || nonce.length !== CHACHA20_POLY1305_NONCE_SIZE) {
+      throw new RangeError(`nonce must be ${CHACHA20_POLY1305_NONCE_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(plaintext)) {
+      throw new TypeError('plaintext must be a Buffer');
+    }
+    return native.chacha20Poly1305Encrypt(key, nonce, plaintext) as Buffer;
+  },
+
+  /**
+   * Verify-then-decrypt. Returns plaintext on success, throws on auth failure.
+   */
+  decrypt(key: Buffer, nonce: Buffer, ciphertext: Buffer): Buffer {
+    if (!Buffer.isBuffer(key) || key.length !== CHACHA20_POLY1305_KEY_SIZE) {
+      throw new RangeError(`key must be ${CHACHA20_POLY1305_KEY_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(nonce) || nonce.length !== CHACHA20_POLY1305_NONCE_SIZE) {
+      throw new RangeError(`nonce must be ${CHACHA20_POLY1305_NONCE_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(ciphertext)) {
+      throw new TypeError('ciphertext must be a Buffer');
+    }
+    return native.chacha20Poly1305Decrypt(key, nonce, ciphertext) as Buffer;
+  },
+
+  /**
+   * Encrypt + authenticate with Additional Authenticated Data.
+   *
+   * AAD is NOT encrypted but IS authenticated. Use for plaintext metadata
+   * (e.g., message headers) that must not be tampered with.
+   */
+  encryptWithAad(
+    key: Buffer,
+    nonce: Buffer,
+    plaintext: Buffer,
+    aad: Buffer,
+  ): Buffer {
+    if (!Buffer.isBuffer(key) || key.length !== CHACHA20_POLY1305_KEY_SIZE) {
+      throw new RangeError(`key must be ${CHACHA20_POLY1305_KEY_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(nonce) || nonce.length !== CHACHA20_POLY1305_NONCE_SIZE) {
+      throw new RangeError(`nonce must be ${CHACHA20_POLY1305_NONCE_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(plaintext) || !Buffer.isBuffer(aad)) {
+      throw new TypeError('plaintext and aad must be Buffers');
+    }
+    return native.chacha20Poly1305EncryptWithAad(key, nonce, plaintext, aad) as Buffer;
+  },
+
+  /**
+   * Verify (key + nonce + ciphertext + AAD) and decrypt.
+   */
+  decryptWithAad(
+    key: Buffer,
+    nonce: Buffer,
+    ciphertext: Buffer,
+    aad: Buffer,
+  ): Buffer {
+    if (!Buffer.isBuffer(key) || key.length !== CHACHA20_POLY1305_KEY_SIZE) {
+      throw new RangeError(`key must be ${CHACHA20_POLY1305_KEY_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(nonce) || nonce.length !== CHACHA20_POLY1305_NONCE_SIZE) {
+      throw new RangeError(`nonce must be ${CHACHA20_POLY1305_NONCE_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(ciphertext) || !Buffer.isBuffer(aad)) {
+      throw new TypeError('ciphertext and aad must be Buffers');
+    }
+    return native.chacha20Poly1305DecryptWithAad(key, nonce, ciphertext, aad) as Buffer;
+  },
+
+  /** Key size in bytes (32). */
+  KEY_SIZE: CHACHA20_POLY1305_KEY_SIZE,
+  /** Nonce size in bytes (12). */
+  NONCE_SIZE: CHACHA20_POLY1305_NONCE_SIZE,
+  /** Authentication tag size in bytes (16), appended to ciphertext. */
+  TAG_SIZE: CHACHA20_POLY1305_TAG_SIZE,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Constant-time comparison (NEW in v0.3.0)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Compare two buffers in constant time.
+ *
+ * Returns `true` only if both buffers have identical length AND contents.
+ *
+ * Use this for any secret comparison (MAC tags, signatures, tokens) where
+ * a fast-fail comparison could leak information via timing side-channels.
+ *
+ * **Wrong:**
+ * ```ts
+ * if (expectedMac.equals(receivedMac)) { ... }  // ← timing-vulnerable
+ * ```
+ *
+ * **Right:**
+ * ```ts
+ * if (constantTimeEq(expectedMac, receivedMac)) { ... }
+ * ```
+ */
+export function constantTimeEq(a: Buffer, b: Buffer): boolean {
+  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
+    throw new TypeError('constantTimeEq: both arguments must be Buffers');
+  }
+  return native.constantTimeEq(a, b) as boolean;
+}
+
+/**
+ * Generate `size` cryptographically secure random bytes via the OS RNG
+ * (Rust side). Equivalent to {@link secureRandom} but routed through the
+ * native bindings — useful when you want to ensure entropy comes from the
+ * same source that the rest of the library uses internally.
+ *
+ * For most code, plain {@link secureRandom} (which uses `node:crypto`)
+ * is fine and avoids a NAPI hop.
+ */
+export function nativeSecureRandom(size: number): Buffer {
+  if (!Number.isInteger(size) || size <= 0) {
+    throw new RangeError(`size must be a positive integer, got ${size}`);
+  }
+  return native.secureRandom(size) as Buffer;
+}
