@@ -31,10 +31,7 @@ pub fn curve25519_public_from_private(private_key: Buffer) -> Result<Buffer> {
 }
 
 #[napi]
-pub fn curve25519_diffie_hellman(
-    private_key: Buffer,
-    peer_public_key: Buffer,
-) -> Result<Buffer> {
+pub fn curve25519_diffie_hellman(private_key: Buffer, peer_public_key: Buffer) -> Result<Buffer> {
     let priv_key = sc_curve25519::PrivateKey::try_from_bytes(&private_key)
         .map_err(|e| Error::new(Status::InvalidArg, format!("private: {e}")))?;
     let peer_pub = sc_curve25519::PublicKey::try_from_bytes(&peer_public_key)
@@ -163,11 +160,7 @@ pub fn hkdf_derive(salt: Buffer, ikm: Buffer, info: Buffer, length: u32) -> Resu
 // ─── AES-256-GCM ────────────────────────────────────────────────────────────
 
 #[napi]
-pub fn aes_256_gcm_encrypt(
-    key: Buffer,
-    nonce: Buffer,
-    plaintext: Buffer,
-) -> Result<Buffer> {
+pub fn aes_256_gcm_encrypt(key: Buffer, nonce: Buffer, plaintext: Buffer) -> Result<Buffer> {
     if key.len() != 32 {
         return Err(Error::new(Status::InvalidArg, "key must be 32 bytes"));
     }
@@ -188,11 +181,7 @@ pub fn aes_256_gcm_encrypt(
 }
 
 #[napi]
-pub fn aes_256_gcm_decrypt(
-    key: Buffer,
-    nonce: Buffer,
-    ciphertext: Buffer,
-) -> Result<Buffer> {
+pub fn aes_256_gcm_decrypt(key: Buffer, nonce: Buffer, ciphertext: Buffer) -> Result<Buffer> {
     if key.len() != 32 {
         return Err(Error::new(Status::InvalidArg, "key must be 32 bytes"));
     }
@@ -327,6 +316,69 @@ pub fn hmac_sha256_verify(key: Buffer, data: Buffer, expected_tag: Buffer) -> bo
 pub fn sha256(data: Buffer) -> Buffer {
     let hash = sc_sha256::sha256(&data);
     Buffer::from(hash.to_vec())
+}
+
+// ─── ChaCha20-Poly1305 (NEW in v0.3.0) ──────────────────────────────────────
+
+#[napi]
+pub fn chacha20_poly1305_encrypt(key: Buffer, nonce: Buffer, plaintext: Buffer) -> Result<Buffer> {
+    let ct = sc_chacha20poly1305::encrypt(&key, &nonce, &plaintext)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(ct))
+}
+
+#[napi]
+pub fn chacha20_poly1305_decrypt(key: Buffer, nonce: Buffer, ciphertext: Buffer) -> Result<Buffer> {
+    let pt = sc_chacha20poly1305::decrypt(&key, &nonce, &ciphertext)
+        .map_err(|e| Error::new(Status::GenericFailure, e.to_string()))?;
+    Ok(Buffer::from(pt))
+}
+
+#[napi]
+pub fn chacha20_poly1305_encrypt_with_aad(
+    key: Buffer,
+    nonce: Buffer,
+    plaintext: Buffer,
+    aad: Buffer,
+) -> Result<Buffer> {
+    let ct = sc_chacha20poly1305::encrypt_with_aad(&key, &nonce, &plaintext, &aad)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(ct))
+}
+
+#[napi]
+pub fn chacha20_poly1305_decrypt_with_aad(
+    key: Buffer,
+    nonce: Buffer,
+    ciphertext: Buffer,
+    aad: Buffer,
+) -> Result<Buffer> {
+    let pt = sc_chacha20poly1305::decrypt_with_aad(&key, &nonce, &ciphertext, &aad)
+        .map_err(|e| Error::new(Status::GenericFailure, e.to_string()))?;
+    Ok(Buffer::from(pt))
+}
+
+// ─── Utility helpers (NEW in v0.3.0) ────────────────────────────────────────
+
+/// Generate `size` cryptographically secure random bytes.
+///
+/// Backed by the OS random number generator (getrandom/BCryptGenRandom/
+/// SecRandomCopyBytes depending on platform).
+#[napi]
+pub fn secure_random(size: u32) -> Result<Buffer> {
+    let bytes = sc_utils::random_bytes(size as usize)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(bytes))
+}
+
+/// Compare two buffers in constant time.
+///
+/// Returns `true` only if both buffers have identical length AND contents.
+/// Use this for comparing MACs, signatures, or any secret value where
+/// timing-based comparison could leak information.
+#[napi]
+pub fn constant_time_eq(a: Buffer, b: Buffer) -> bool {
+    sc_utils::constant_time_eq(&a, &b)
 }
 
 // ─── Version ────────────────────────────────────────────────────────────────
