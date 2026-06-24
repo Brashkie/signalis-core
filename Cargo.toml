@@ -14,7 +14,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 rust-version = "1.80"
 authors = ["Brashkie (Hepein)"]
@@ -47,15 +47,15 @@ rand_core = { version = "0.6", features = ["std"] }
 thiserror = "1.0"
 
 # Internal crates
-sc-curve25519 = { version = "0.3.0", path = "crates/sc-curve25519" }
-sc-ed25519 = { version = "0.3.0", path = "crates/sc-ed25519" }
-sc-xed25519 = { version = "0.3.0", path = "crates/sc-xed25519" }
-sc-hkdf = { version = "0.3.0", path = "crates/sc-hkdf" }
-sc-aes = { version = "0.3.0", path = "crates/sc-aes" }
-sc-hmac = { version = "0.3.0", path = "crates/sc-hmac" }
-sc-sha256 = { version = "0.3.0", path = "crates/sc-sha256" }
-sc-chacha20poly1305 = { version = "0.3.0", path = "crates/sc-chacha20poly1305" }
-sc-utils = { version = "0.3.0", path = "crates/sc-utils" }
+sc-curve25519 = { version = "0.3.1", path = "crates/sc-curve25519" }
+sc-ed25519 = { version = "0.3.1", path = "crates/sc-ed25519" }
+sc-xed25519 = { version = "0.3.1", path = "crates/sc-xed25519" }
+sc-hkdf = { version = "0.3.1", path = "crates/sc-hkdf" }
+sc-aes = { version = "0.3.1", path = "crates/sc-aes" }
+sc-hmac = { version = "0.3.1", path = "crates/sc-hmac" }
+sc-sha256 = { version = "0.3.1", path = "crates/sc-sha256" }
+sc-chacha20poly1305 = { version = "0.3.1", path = "crates/sc-chacha20poly1305" }
+sc-utils = { version = "0.3.1", path = "crates/sc-utils" }
 
 # Tests
 hex-literal = "0.4"

@@ -511,7 +511,7 @@ dependencies = [
 
 [[package]]
 name = "sc-aes"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -525,7 +525,7 @@ dependencies = [
 
 [[package]]
 name = "sc-chacha20poly1305"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "chacha20poly1305",
  "hex-literal",
@@ -534,7 +534,7 @@ dependencies = [
 
 [[package]]
 name = "sc-curve25519"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "curve25519-dalek",
  "hex-literal",
@@ -547,7 +547,7 @@ dependencies = [
 
 [[package]]
 name = "sc-ed25519"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "ed25519-dalek",
  "hex-literal",
@@ -558,7 +558,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hkdf"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "hex-literal",
  "hkdf",
@@ -569,7 +569,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hmac"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "hex-literal",
  "hmac",
@@ -580,7 +580,7 @@ dependencies = [
 
 [[package]]
 name = "sc-node"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "napi",
  "napi-build",
@@ -599,7 +599,7 @@ dependencies = [
 
 [[package]]
 name = "sc-sha256"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "hex-literal",
  "sha2",
@@ -607,7 +607,7 @@ dependencies = [
 
 [[package]]
 name = "sc-utils"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "rand",
  "subtle",
@@ -617,7 +617,7 @@ dependencies = [
 
 [[package]]
 name = "sc-xed25519"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "curve25519-dalek",
  "rand",
