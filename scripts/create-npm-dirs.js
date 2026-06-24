@@ -63,6 +63,19 @@ const PLATFORMS = [
     libc: 'glibc',
     nodeFile: 'signalis-core.linux-arm64-gnu.node',
   },
+  // ─── Android (NEW in v0.3.1) ──────────────────────────────────────
+  {
+    folder: 'android-arm64',
+    os: 'android',
+    cpu: 'arm64',
+    nodeFile: 'signalis-core.android-arm64.node',
+  },
+  {
+    folder: 'android-arm-eabi',
+    os: 'android',
+    cpu: 'arm',
+    nodeFile: 'signalis-core.android-arm-eabi.node',
+  },
 ];
 
 const npmDir = path.join(__dirname, '..', 'npm');
