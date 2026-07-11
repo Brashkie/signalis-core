@@ -135,7 +135,6 @@ describe('XEd25519', () => {
     });
 
     it('returns false for invalid inputs (no throw)', () => {
-      const kp = Curve25519.generateKeyPair();
       expect(
         XEd25519.verifyBool(Buffer.alloc(31), Buffer.from('msg'), Buffer.alloc(64)),
       ).toBe(false);

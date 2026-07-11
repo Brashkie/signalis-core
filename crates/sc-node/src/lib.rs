@@ -31,7 +31,10 @@ pub fn curve25519_public_from_private(private_key: Buffer) -> Result<Buffer> {
 }
 
 #[napi]
-pub fn curve25519_diffie_hellman(private_key: Buffer, peer_public_key: Buffer) -> Result<Buffer> {
+pub fn curve25519_diffie_hellman(
+    private_key: Buffer,
+    peer_public_key: Buffer,
+) -> Result<Buffer> {
     let priv_key = sc_curve25519::PrivateKey::try_from_bytes(&private_key)
         .map_err(|e| Error::new(Status::InvalidArg, format!("private: {e}")))?;
     let peer_pub = sc_curve25519::PublicKey::try_from_bytes(&peer_public_key)
@@ -160,7 +163,11 @@ pub fn hkdf_derive(salt: Buffer, ikm: Buffer, info: Buffer, length: u32) -> Resu
 // ─── AES-256-GCM ────────────────────────────────────────────────────────────
 
 #[napi]
-pub fn aes_256_gcm_encrypt(key: Buffer, nonce: Buffer, plaintext: Buffer) -> Result<Buffer> {
+pub fn aes_256_gcm_encrypt(
+    key: Buffer,
+    nonce: Buffer,
+    plaintext: Buffer,
+) -> Result<Buffer> {
     if key.len() != 32 {
         return Err(Error::new(Status::InvalidArg, "key must be 32 bytes"));
     }
@@ -181,7 +188,11 @@ pub fn aes_256_gcm_encrypt(key: Buffer, nonce: Buffer, plaintext: Buffer) -> Res
 }
 
 #[napi]
-pub fn aes_256_gcm_decrypt(key: Buffer, nonce: Buffer, ciphertext: Buffer) -> Result<Buffer> {
+pub fn aes_256_gcm_decrypt(
+    key: Buffer,
+    nonce: Buffer,
+    ciphertext: Buffer,
+) -> Result<Buffer> {
     if key.len() != 32 {
         return Err(Error::new(Status::InvalidArg, "key must be 32 bytes"));
     }
@@ -321,14 +332,22 @@ pub fn sha256(data: Buffer) -> Buffer {
 // ─── ChaCha20-Poly1305 (NEW in v0.3.0) ──────────────────────────────────────
 
 #[napi]
-pub fn chacha20_poly1305_encrypt(key: Buffer, nonce: Buffer, plaintext: Buffer) -> Result<Buffer> {
+pub fn chacha20_poly1305_encrypt(
+    key: Buffer,
+    nonce: Buffer,
+    plaintext: Buffer,
+) -> Result<Buffer> {
     let ct = sc_chacha20poly1305::encrypt(&key, &nonce, &plaintext)
         .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
     Ok(Buffer::from(ct))
 }
 
 #[napi]
-pub fn chacha20_poly1305_decrypt(key: Buffer, nonce: Buffer, ciphertext: Buffer) -> Result<Buffer> {
+pub fn chacha20_poly1305_decrypt(
+    key: Buffer,
+    nonce: Buffer,
+    ciphertext: Buffer,
+) -> Result<Buffer> {
     let pt = sc_chacha20poly1305::decrypt(&key, &nonce, &ciphertext)
         .map_err(|e| Error::new(Status::GenericFailure, e.to_string()))?;
     Ok(Buffer::from(pt))
@@ -379,6 +398,88 @@ pub fn secure_random(size: u32) -> Result<Buffer> {
 #[napi]
 pub fn constant_time_eq(a: Buffer, b: Buffer) -> bool {
     sc_utils::constant_time_eq(&a, &b)
+}
+
+// ─── Encoding helpers (NEW in v0.4.0) ───────────────────────────────────────
+
+/// Encode bytes to standard Base64 (RFC 4648, with `=` padding).
+#[napi]
+pub fn base64_encode(input: Buffer) -> String {
+    sc_encoding::base64::encode(&input)
+}
+
+/// Decode a standard Base64 string back to bytes.
+///
+/// Throws if the input contains invalid characters, incorrect padding, or wrong length.
+#[napi]
+pub fn base64_decode(input: String) -> Result<Buffer> {
+    sc_encoding::base64::decode(&input)
+        .map(Buffer::from)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))
+}
+
+/// Encode bytes to URL-safe Base64 without padding (RFC 4648 §5).
+///
+/// Uses `-` and `_` instead of `+` and `/`. Safe to include in URLs,
+/// filenames, and HTTP headers as-is.
+#[napi]
+pub fn base64_encode_url_safe(input: Buffer) -> String {
+    sc_encoding::base64::encode_url_safe(&input)
+}
+
+/// Decode a URL-safe Base64 string (no padding) back to bytes.
+#[napi]
+pub fn base64_decode_url_safe(input: String) -> Result<Buffer> {
+    sc_encoding::base64::decode_url_safe(&input)
+        .map(Buffer::from)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))
+}
+
+/// Encode bytes to a lowercase hex string.
+#[napi]
+pub fn hex_encode(input: Buffer) -> String {
+    sc_encoding::hex::encode(&input)
+}
+
+/// Encode bytes to an uppercase hex string.
+#[napi]
+pub fn hex_encode_upper(input: Buffer) -> String {
+    sc_encoding::hex::encode_upper(&input)
+}
+
+/// Decode a hex string back to bytes. Case-insensitive.
+///
+/// Throws if the string has an odd number of characters or contains non-hex characters.
+#[napi]
+pub fn hex_decode(input: String) -> Result<Buffer> {
+    sc_encoding::hex::decode(&input)
+        .map(Buffer::from)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))
+}
+
+/// Check whether the given string is well-formed hex (even length, only 0-9/a-f/A-F).
+#[napi]
+pub fn hex_is_valid(input: String) -> bool {
+    sc_encoding::hex::is_valid(&input)
+}
+
+/// Encode a string to its UTF-8 byte representation.
+#[napi]
+pub fn utf8_encode(input: String) -> Buffer {
+    Buffer::from(sc_encoding::utf8::encode(&input))
+}
+
+/// Decode UTF-8 bytes to a string. Throws on invalid UTF-8.
+#[napi]
+pub fn utf8_decode(input: Buffer) -> Result<String> {
+    sc_encoding::utf8::decode(&input)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))
+}
+
+/// Check whether the given bytes are valid UTF-8.
+#[napi]
+pub fn utf8_is_valid(input: Buffer) -> bool {
+    sc_encoding::utf8::is_valid(&input)
 }
 
 // ─── Version ────────────────────────────────────────────────────────────────

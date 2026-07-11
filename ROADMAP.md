@@ -1,286 +1,284 @@
 # 🗺️ Roadmap
 
-Long-term plan for `@brashkie/signalis-core`.
+Signalis Core is being built as a high-performance native cryptography engine for Node.js, providing modern, audited cryptographic primitives with a strong focus on performance, security, portability, and developer experience.
 
-This roadmap is **directional, not prescriptive**. Versions and timelines may shift based on community feedback, security research, and ecosystem changes.
+The goal is to become a production-grade cryptographic foundation suitable for secure messaging, authentication, key management, and other security-critical applications.
 
----
+**Legend:**
+- ✅ Complete
+- 🟡 In progress / partial
+- 🔴 Not started
 
-## 🎯 Vision
-
-> A complete, production-ready cryptographic foundation for end-to-end encrypted messaging in TypeScript — fast as native libraries, easy as a JS package.
-
-**Principles:**
-
-1. **Security first** — audited primitives, no rolling our own
-2. **Performance** — match or beat native bindings of established libraries
-3. **Type safety** — leverage TypeScript fully (branded types, strict mode)
-4. **Cross-platform** — pre-built binaries for all major platforms
-5. **Ecosystem alignment** — compatible with Signal Protocol specs
+**Current release:** `v0.4.0` (encoding helpers + Android x86_64).
 
 ---
 
-## 📅 Release Timeline
+## ✅ Phase 1 — Cryptographic foundation
 
-```
-v0.1.0 ━━━━━ Released May 2026 ━━━━━ Core primitives (foundation)
-v0.2.0 ━━━━━ Released May 2026 ━━━━━ Signatures (Ed25519 + XEd25519) + AAD  ← CURRENT
-v0.3.0 ━━━━━ Q3 2026 ━━━━━━━━━━━━━━━ Modern AEAD + KDF + protocol helpers
-v0.4.0 ━━━━━ Q4 2026 ━━━━━━━━━━━━━━━ Advanced primitives + side-channel hardening
-v0.5.0 ━━━━━ Q1 2027 ━━━━━━━━━━━━━━━ Group crypto + sender keys helpers
-v1.0.0 ━━━━━ Q2 2027 ━━━━━━━━━━━━━━━ Stable API, security audit
-v2.0.0 ━━━━━ 2028 ━━━━━━━━━━━━━━━━━━ Post-quantum cryptography
-```
+Core primitives.
 
----
-
-## ✅ v0.1.0 — Foundation (Released)
-
-The initial release establishing the core architecture.
-
-- [x] Rust workspace setup
-- [x] NAPI-RS bindings infrastructure
-- [x] Multi-platform builds (7 platforms via GitHub Actions)
-- [x] Curve25519 (X25519 ECDH)
-- [x] HKDF-SHA256
-- [x] AES-256-GCM (no AAD)
+- [x] AES-256-GCM
 - [x] AES-256-CBC
-- [x] HMAC-SHA256
 - [x] SHA-256
-- [x] Encoding utilities (hex, base64)
-- [x] Constant-time helpers
+- [x] HMAC-SHA256
+- [x] HKDF (RFC 5869)
+- [x] Curve25519
+- [x] Ed25519
+- [x] XEd25519
+- [x] RFC test vectors
+- [x] NIST test vectors
+- [x] Constant-time verification
+- [x] Native Rust implementation
+- [x] Node.js bindings (N-API)
 
 ---
 
-## ✅ v0.2.0 — Signatures + AAD (Released)
+## 🟡 Phase 2 — Multi-platform support
 
-Digital signatures and authenticated encryption with associated data.
+Native builds across major platforms.
 
-- [x] Ed25519 (RFC 8032)
-- [x] XEd25519 (Signal-style signatures with Curve25519 keys)
-- [x] AES-GCM with AAD support
-- [x] Constants exposed in namespace API (`Ed25519.SIGNATURE_SIZE`, etc.)
-- [x] Comprehensive RFC test vectors
-- [x] CHANGELOG, migration guide
+- [x] Windows x64
+- [x] Windows ARM64
+- [x] Linux x64 (GNU)
+- [x] Linux x64 (musl)
+- [x] Linux ARM64
+- [x] macOS Intel
+- [x] macOS Apple Silicon
+- [x] Android ARM64
+- [x] Android ARMv7
+- [x] Android x86_64 *(new in v0.4.0)*
+- [ ] iOS ARM64
+- [ ] WASM
+- [ ] FreeBSD
+- [ ] RISC-V
 
----
-
-## 🚧 v0.3.0 — Modern Crypto Suite (Q3 2026)
-
-Modern AEAD, additional KDFs, and protocol-level helpers.
-
-### Symmetric Crypto
-- [ ] **ChaCha20-Poly1305** — Alternative AEAD (faster on CPUs without AES-NI)
-- [ ] **XChaCha20-Poly1305** — Extended nonce variant (96 → 192 bits)
-- [ ] **AEAD streaming API** — For large files
-
-### Hashing
-- [ ] **SHA-512** — For applications requiring 512-bit hashes
-- [ ] **BLAKE3** — Modern hash (faster than SHA-256 on multi-core)
-- [ ] **HMAC-SHA512** — For interop with systems requiring it
-
-### Key Derivation
-- [ ] **HKDF-Expand-Label** — TLS 1.3-style label-prefixed HKDF
-- [ ] **Argon2id** — Password-based key derivation (for PIN/passphrase encryption)
-- [ ] **PBKDF2-HMAC-SHA256** — Legacy interop
-
-### Protocol Helpers
-- [ ] **X3DH helper functions** — `x3dhInitiate()` / `x3dhRespond()` building blocks
-- [ ] **Double Ratchet primitives** — `ratchetEncrypt()` / `ratchetDecrypt()` low-level
-- [ ] **Safety number generation** — SHA-512-based fingerprints (like Signal app)
-
-### Quality Improvements
-- [ ] **Streaming AEAD** for files > memory
-- [ ] Benchmarks suite (`npm run bench`)
-- [ ] Memory profiling tools
+**Progress: 10 / 14 (71%)**
 
 ---
 
-## 🔒 v0.4.0 — Hardening & Side-Channels (Q4 2026)
+## 🟡 Phase 3 — Cryptographic utilities
 
-Production-grade defenses and edge cases.
+Common helpers used by modern cryptographic software.
 
-### Side-Channel Defenses
-- [ ] **Constant-time scalar multiplication** verification tests
-- [ ] **Cache-attack resistance** documentation
-- [ ] **Timing attack** test suite
-- [ ] **Power analysis** considerations doc
+- [x] Secure random generation *(v0.3.0 — `nativeSecureRandom`)*
+- [x] Constant-time comparison *(v0.3.0 — `constantTimeEq`)*
+- [x] Secure memory zeroization *(v0.3.0 — `sc-utils`)*
+- [x] Base64 helpers *(v0.4.0 — `Base64` namespace, standard + URL-safe)*
+- [x] Hex helpers *(v0.4.0 — `Hex` namespace)*
+- [x] UTF-8 helpers *(v0.4.0 — `Utf8` namespace, strict validation)*
+- [ ] Buffer utilities
+- [ ] Byte array utilities
+- [ ] Random IV generation
+- [ ] Random nonce generation
+- [ ] Secure validation helpers
 
-### Memory Safety
-- [ ] **Locked memory** for private keys (mlock on Linux)
-- [ ] **Secure key wiping** verification
-- [ ] **Stack canaries** in Rust crates
-
-### Hardware Integration
-- [ ] **HSM support** documentation (PKCS#11 stub)
-- [ ] **TPM 2.0** integration helpers (Linux)
-- [ ] **Apple Secure Enclave** docs
-- [ ] **Windows TBS** stub
-
-### Auditing & Compliance
-- [ ] Third-party audit preparation
-- [ ] FIPS 140-3 compliance assessment
-- [ ] CRYPTREC evaluation
-- [ ] Common Criteria documentation
+**Progress: 6 / 11 (55%)**
 
 ---
 
-## 👥 v0.5.0 — Groups & Sender Keys (Q1 2027)
+## 🟡 Phase 4 — Modern cryptographic primitives
 
-Group messaging primitives for protocols like Signal's Sender Keys.
+Expand the available primitive set.
 
-- [ ] **Sender key generation** helpers
-- [ ] **Group chain key** derivation
-- [ ] **Skipped message keys** management
-- [ ] **Group state serialization** format
-- [ ] **MLS-style tree operations** (optional, exploratory)
+- [x] ChaCha20 *(part of ChaCha20-Poly1305, v0.3.0)*
+- [x] ChaCha20-Poly1305 *(v0.3.0)*
+- [ ] XChaCha20-Poly1305
+- [ ] Argon2id
+- [ ] PBKDF2
+- [ ] SHA-3
+- [ ] BLAKE3
+- [ ] HKDF-SHA512
+- [ ] HMAC-SHA512
 
----
-
-## 🎯 v1.0.0 — Stable Release (Q2 2027)
-
-Production-ready, stable API, audited.
-
-### Pre-1.0 Checklist
-- [ ] Security audit by recognized firm
-- [ ] 95%+ code coverage (Rust + TS)
-- [ ] Fuzz testing (cargo-fuzz, AFL)
-- [ ] Performance benchmarks vs libsignal-protocol
-- [ ] Real-world deployment (powering production app)
-- [ ] Stable API commitment (semver guarantees)
-- [ ] Full documentation site (mdbook-based)
-- [ ] Migration guides from 0.x → 1.0
-
-### v1.0 API Promises
-- ✅ No breaking changes in 1.x.x
-- ✅ Deprecation warnings 6 months ahead
-- ✅ LTS support (security patches for 2 years)
+**Progress: 2 / 9 (22%)**
 
 ---
 
-## 🌌 v2.0.0+ — Post-Quantum (2028)
+## 🔴 Phase 5 — Performance
 
-Preparing for the quantum era.
+Optimize native execution.
 
-### Post-Quantum Primitives
-- [ ] **Kyber768** (ML-KEM) — Key encapsulation
-- [ ] **Dilithium3** (ML-DSA) — Digital signatures
-- [ ] **SPHINCS+** — Hash-based signatures (conservative option)
+- [ ] SIMD optimizations
+- [ ] AES-NI acceleration *(implicit via RustCrypto — needs explicit `-C target-feature=+aes` flag in release profile to document)*
+- [ ] ARM Crypto Extensions *(same — implicit today, needs explicit flag)*
+- [ ] NEON optimizations
+- [ ] Zero-copy buffers
+- [ ] Reduced allocations
+- [ ] Cache-friendly implementations
+- [ ] Criterion benchmarks
+- [ ] Performance regression detection
 
-### Hybrid Schemes
-- [ ] **X25519 + Kyber768** hybrid key exchange
-- [ ] **Ed25519 + Dilithium** hybrid signatures
-- [ ] PQXDH (Signal's post-quantum X3DH)
-
-### Migration Tools
-- [ ] Hybrid → PQ-only migration utilities
-- [ ] Compatibility shims for legacy peers
+**Progress: 0 / 9 (0%)**
 
 ---
 
-## 📊 Performance Targets
+## 🟡 Phase 6 — Security hardening
 
-| Operation | v0.2 actual | v1.0 target |
-|-----------|------------:|------------:|
-| SHA-256 (1KB) | 142k ops/s | 200k ops/s |
-| Curve25519 keygen | 24k ops/s | 30k ops/s |
-| Ed25519 sign | 12k ops/s | 18k ops/s |
-| AES-GCM (1KB) | 250k ops/s | 350k ops/s |
+Production-grade security.
 
-Optimization strategies:
-- AVX2/SIMD intrinsics
-- Multi-threaded operations (`napi-rs` ThreadsafeFunction)
-- Hardware accelerated AES (already using AES-NI)
-- Compile-time optimization tuning
+- [x] cargo-audit *(v0.3.0 — CI gate)*
+- [ ] cargo-deny
+- [ ] cargo-fuzz
+- [ ] Miri
+- [ ] AddressSanitizer
+- [ ] UndefinedBehaviorSanitizer
+- [ ] LeakSanitizer
+- [ ] Google Wycheproof vectors
+- [ ] Fuzz testing
+- [ ] Side-channel review
+- [ ] Secure default configuration
 
----
-
-## 🌐 Ecosystem Goals
-
-### Tooling
-- [ ] **CLI tool** (`npx signalis-core`) for debugging/testing
-- [ ] **Browser build** (WASM) — possibly via separate package
-- [ ] **Deno support** — once Deno's NAPI compatibility matures
-- [ ] **Bun support** — verify and document
-
-### Integrations
-- [ ] Reference example: chat app skeleton
-- [ ] Plugins for popular frameworks (Express, Fastify, Hono)
-- [ ] Storage adapters reference (IndexedDB, SQLite, Redis)
-
-### Documentation
-- [ ] Full mdBook site at `signalis.dev` (TBD domain)
-- [ ] Interactive playground (CodeSandbox-style)
-- [ ] Video tutorials
-- [ ] Spanish + Portuguese translations
+**Progress: 1 / 11 (9%)**
 
 ---
 
-## 🤝 Community Priorities
+## 🟡 Phase 7 — Modular architecture
 
-We are particularly interested in contributions for:
+Maintainable internal design.
 
-🟢 **High priority**
-- Cross-platform testing (especially edge cases)
-- Documentation improvements
-- Performance benchmarks vs other libraries
-- Security review
+- [x] Modular workspace crates *(10 crates as of v0.4.0)*
+- [x] Shared error system *(via `thiserror`)*
+- [x] Shared crypto traits *(via RustCrypto ecosystem)*
+- [x] Internal utility crate *(`sc-utils`)*
+- [x] Dedicated encoding crate *(`sc-encoding` — new in v0.4.0)*
+- [ ] Common testing framework
+- [x] Unified public API *(`sc-node` re-exports everything)*
+- [ ] Stable internal abstractions
 
-🟡 **Medium priority**
-- Additional language bindings (Python, Go via FFI)
-- Example applications
-- Tutorials and blog posts
-
-🟠 **Exploratory**
-- WASM build for browsers
-- React Native bridge
-- Mobile-first features
+**Progress: 6 / 8 (75%)**
 
 ---
 
-## ❓ What's NOT in Scope
+## 🟡 Phase 8 — Developer experience
 
-To keep `signalis-core` focused, the following are **out of scope**:
+Better APIs and documentation.
 
-- ❌ Higher-level protocols (use `@brashkie/signalis` for X3DH/Double Ratchet)
-- ❌ Network/transport layer (use a separate library)
-- ❌ Persistent storage (interface, don't implement)
-- ❌ UI components / safety number rendering
-- ❌ Account management / device linking flows
-- ❌ Federation / discovery protocols
+- [x] Complete TypeScript declarations *(auto-generated by napi-rs)*
+- [x] ESM / CommonJS parity *(handled by napi-rs)*
+- [ ] Tree-shaking support *(requires pure ESM — napi-rs doesn't make this easy)*
+- [x] Interactive examples *(README code samples)*
+- [x] API documentation *(bilingual EN + ES)*
+- [ ] Migration guides
+- [ ] Better error messages
+- [ ] Cookbook examples
 
-These belong in higher-level packages.
-
----
-
-## 🔄 Versioning Strategy
-
-We follow [semver](https://semver.org/):
-
-- **Patch** (0.x.Y): Bug fixes, performance improvements
-- **Minor** (0.X.0): New features, no breaking changes
-- **Major** (X.0.0): Breaking changes (rare, well-documented)
-
-In pre-1.0 (0.x.x):
-- Minor versions **may** include small breaking changes
-- All breaking changes documented in CHANGELOG with migration guide
-
-After 1.0:
-- Strict semver, no breaking changes in minors
-- Deprecation cycle of 2+ minor versions before removal
+**Progress: 4 / 8 (50%)**
 
 ---
 
-## 💬 Feedback
+## 🟡 Phase 9 — Testing & Quality
 
-This roadmap is **community-driven**. To influence priorities:
+Reliability and correctness.
 
-- 💬 Open a [Discussion](https://github.com/Brashkie/signalis-core/discussions)
-- 🐛 Report [Issues](https://github.com/Brashkie/signalis-core/issues)
-- 🗳️ Vote with 👍 on existing proposals
-- 📧 Email: brashkie@hepein.com (for sensitive feedback)
+- [x] Cross-platform CI *(matrix Linux/macOS/Windows/Android)*
+- [ ] Continuous benchmarking
+- [x] Coverage reports *(100% TS-side, ~99% Rust-side)*
+- [ ] Property-based testing *(proptest available in dev-deps, not yet used broadly)*
+- [ ] Stress testing
+- [ ] Large input testing
+- [ ] Concurrency testing
+- [ ] Memory leak detection
+- [ ] Reproducible builds
+
+**Progress: 2 / 9 (22%)**
 
 ---
 
-**Last updated:** May 2026
-**Next review:** August 2026
+## 🔴 Phase 10 — Enterprise readiness
+
+Long-term production support.
+
+- [ ] Stable API guarantees
+- [ ] Semantic versioning policy
+- [ ] Security policy
+- [ ] CVE response process
+- [ ] Software Bill of Materials (SBOM)
+- [ ] Signed release artifacts
+- [ ] Long-term support releases
+- [ ] External security audit
+- [ ] Published benchmark reports
+
+**Progress: 0 / 9 (0%)**
+
+---
+
+## 🔴 Phase 11 — Advanced cryptography
+
+Additional algorithms for advanced use cases.
+
+- [ ] AES Key Wrap (RFC 3394)
+- [ ] AES Key Wrap with Padding (RFC 5649)
+- [ ] AES-CTR
+- [ ] AES-XTS
+- [ ] HKDF multi-key derivation
+- [ ] Streaming encryption helpers
+- [ ] Incremental hashing APIs
+- [ ] Incremental HMAC APIs
+- [ ] Secure key serialization
+- [ ] Secure key import/export
+
+**Progress: 0 / 10 (0%)**
+
+---
+
+## 🔴 Phase 12 — Future improvements
+
+Long-term enhancements.
+
+- [ ] Hardware-backed acceleration
+- [ ] Pluggable cryptographic backends
+- [ ] Runtime CPU feature detection
+- [ ] Configurable secure allocators
+- [ ] Memory protection APIs
+- [ ] Advanced benchmark suite
+- [ ] Performance telemetry hooks
+- [ ] Long-term compatibility testing
+
+**Progress: 0 / 8 (0%)**
+
+---
+
+## 📊 Overall Progress
+
+| Phase | Progress |
+|-------|----------|
+| 1. Cryptographic foundation | ✅ 100% (13/13) |
+| 2. Multi-platform support | 🟡 71% (10/14) |
+| 3. Cryptographic utilities | 🟡 55% (6/11) |
+| 4. Modern cryptographic primitives | 🟡 22% (2/9) |
+| 5. Performance | 🔴 0% (0/9) |
+| 6. Security hardening | 🟡 9% (1/11) |
+| 7. Modular architecture | 🟡 75% (6/8) |
+| 8. Developer experience | 🟡 50% (4/8) |
+| 9. Testing & Quality | 🟡 22% (2/9) |
+| 10. Enterprise readiness | 🔴 0% (0/9) |
+| 11. Advanced cryptography | 🔴 0% (0/10) |
+| 12. Future improvements | 🔴 0% (0/8) |
+
+**Total: 44 / 119 (37%)**
+
+---
+
+## 🎯 Near-term Focus (v0.5.0 candidates)
+
+Not committed — this is a menu of the next natural steps, in rough priority order:
+
+1. **Finish Phase 3 (Utilities)** — Buffer/ByteArray utilities, Random IV/nonce generators, secure validation helpers. Small items, cohesive with what's already there.
+2. **XChaCha20-Poly1305** — extended-nonce AEAD (24-byte nonces), useful when you can't guarantee nonce uniqueness with 12 bytes.
+3. **PBKDF2-SHA256** — password-based KDF, small addition, useful for key derivation from user passwords.
+4. **Argon2id** — modern password hashing, replaces PBKDF2 for greenfield use cases.
+5. **Criterion benchmarks** *(Phase 5)* — establish baseline before performance work begins.
+
+---
+
+## 💡 Notes on Deferred Items
+
+**iOS ARM64:** Requires macOS host + Xcode + Apple Developer certificate (paid). Additionally, "Node.js on iOS" is essentially non-existent as a runtime (React Native uses JSI, not NAPI; NodeJS-Mobile is unmaintained). Deferred until WASM lands — which will cover React Native use cases via a bridge anyway.
+
+**WASM:** Higher priority than iOS ARM64. Opens up React Native (via `react-native-wasm`), browsers, and Cloudflare Workers in one binary target.
+
+**Post-quantum cryptography:** Not tracked in this roadmap — it's a separate long-term effort (probably v2.0.0).
+
+---
+
+🔐 + ❤️ Hepein Oficial — *Signalis Core is a passion project of [@Brashkie](https://github.com/Brashkie).*

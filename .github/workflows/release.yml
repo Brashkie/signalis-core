@@ -93,6 +93,19 @@ jobs:
               rustup target add armv7-linux-androideabi
               npm run build:native -- --target armv7-linux-androideabi
 
+          # Android x86_64 (NEW in v0.4.0) — used by Android Emulator
+          - host: ubuntu-latest
+            target: x86_64-linux-android
+            build: |
+              export ANDROID_NDK_HOME="${ANDROID_NDK_LATEST_HOME}"
+              export PATH="${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:${PATH}"
+              export CC_x86_64_linux_android=x86_64-linux-android24-clang
+              export CXX_x86_64_linux_android=x86_64-linux-android24-clang++
+              export AR_x86_64_linux_android=llvm-ar
+              export CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER=x86_64-linux-android24-clang
+              rustup target add x86_64-linux-android
+              npm run build:native -- --target x86_64-linux-android
+
     name: Build - ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
     steps:

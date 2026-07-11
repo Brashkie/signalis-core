@@ -69,8 +69,8 @@ import SignalisCoreDefault from '../src';
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('Module exports', () => {
-  it('exports VERSION as 0.2.0', () => {
-    expect(VERSION).toBe('0.2.0');
+  it('exports VERSION as 0.4.0', () => {
+    expect(VERSION).toBe('0.4.0');
   });
 
   it('exports nativeVersion as string', () => {
@@ -124,7 +124,7 @@ describe('Module exports', () => {
     expect(SignalisCoreDefault.AES_CBC).toBeDefined();
     expect(SignalisCoreDefault.HMAC).toBeDefined();
     expect(SignalisCoreDefault.SHA256).toBeDefined();
-    expect(SignalisCoreDefault.VERSION).toBe('0.2.0');
+    expect(SignalisCoreDefault.VERSION).toBe('0.4.0');
     expect(typeof SignalisCoreDefault.secureRandom).toBe('function');
     expect(Object.isFrozen(SignalisCoreDefault)).toBe(true);
   });

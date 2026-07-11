@@ -7,7 +7,6 @@
  * @packageDocumentation
  */
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 import * as native from '../index.js';
 
 import {
@@ -927,3 +926,180 @@ export function nativeSecureRandom(size: number): Buffer {
   }
   return native.secureRandom(size) as Buffer;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Encoding helpers (NEW in v0.4.0)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Base64 encoding (RFC 4648).
+ *
+ * Two variants are available:
+ * - **Standard** (`encode`/`decode`) — uses `A-Z a-z 0-9 + /` with `=` padding.
+ *   Suitable for MIME, email, and general payloads.
+ * - **URL-safe** (`encodeUrlSafe`/`decodeUrlSafe`) — uses `-` and `_` instead
+ *   of `+` and `/`, and omits padding. Safe for URLs, filenames, HTTP headers.
+ *
+ * @example
+ * ```ts
+ * const encoded = Base64.encode(Buffer.from('hello'));      // "aGVsbG8="
+ * const decoded = Base64.decode(encoded);                    // <Buffer 68 65 6c 6c 6f>
+ * const url = Base64.encodeUrlSafe(Buffer.from('hello'));    // "aGVsbG8" (no padding)
+ * ```
+ */
+export const Base64 = Object.freeze({
+  /**
+   * Encode bytes to standard Base64 (with `=` padding).
+   */
+  encode(input: Buffer): string {
+    if (!Buffer.isBuffer(input)) {
+      throw new TypeError('Base64.encode: input must be a Buffer');
+    }
+    return native.base64Encode(input) as string;
+  },
+
+  /**
+   * Decode a standard Base64 string back to bytes.
+   *
+   * @throws {RangeError} on invalid characters, wrong length, or invalid padding.
+   */
+  decode(input: string): Buffer {
+    if (typeof input !== 'string') {
+      throw new TypeError('Base64.decode: input must be a string');
+    }
+    return native.base64Decode(input) as Buffer;
+  },
+
+  /**
+   * Encode bytes to URL-safe Base64 without padding.
+   * Uses `-` and `_` instead of `+` and `/`.
+   */
+  encodeUrlSafe(input: Buffer): string {
+    if (!Buffer.isBuffer(input)) {
+      throw new TypeError('Base64.encodeUrlSafe: input must be a Buffer');
+    }
+    return native.base64EncodeUrlSafe(input) as string;
+  },
+
+  /**
+   * Decode a URL-safe Base64 string (no padding) back to bytes.
+   *
+   * @throws {RangeError} on invalid characters or wrong length.
+   */
+  decodeUrlSafe(input: string): Buffer {
+    if (typeof input !== 'string') {
+      throw new TypeError('Base64.decodeUrlSafe: input must be a string');
+    }
+    return native.base64DecodeUrlSafe(input) as Buffer;
+  },
+});
+
+/**
+ * Hex (Base16) encoding.
+ *
+ * - Encoding produces lowercase output by default.
+ * - Decoding is case-insensitive.
+ *
+ * @example
+ * ```ts
+ * const encoded = Hex.encode(Buffer.from([0xde, 0xad, 0xbe, 0xef]));  // "deadbeef"
+ * const decoded = Hex.decode('DEADBEEF');                              // <Buffer de ad be ef>
+ * Hex.isValid('deadbeef');   // true
+ * Hex.isValid('nope!');      // false
+ * ```
+ */
+export const Hex = Object.freeze({
+  /**
+   * Encode bytes to a lowercase hex string.
+   */
+  encode(input: Buffer): string {
+    if (!Buffer.isBuffer(input)) {
+      throw new TypeError('Hex.encode: input must be a Buffer');
+    }
+    return native.hexEncode(input) as string;
+  },
+
+  /**
+   * Encode bytes to an uppercase hex string.
+   * (Rare, but included for legacy protocols.)
+   */
+  encodeUpper(input: Buffer): string {
+    if (!Buffer.isBuffer(input)) {
+      throw new TypeError('Hex.encodeUpper: input must be a Buffer');
+    }
+    return native.hexEncodeUpper(input) as string;
+  },
+
+  /**
+   * Decode a hex string to bytes. Case-insensitive.
+   *
+   * @throws {RangeError} on odd-length input or non-hex characters.
+   */
+  decode(input: string): Buffer {
+    if (typeof input !== 'string') {
+      throw new TypeError('Hex.decode: input must be a string');
+    }
+    return native.hexDecode(input) as Buffer;
+  },
+
+  /**
+   * Cheap validation: is this a well-formed hex string?
+   */
+  isValid(input: string): boolean {
+    if (typeof input !== 'string') {
+      throw new TypeError('Hex.isValid: input must be a string');
+    }
+    return native.hexIsValid(input) as boolean;
+  },
+});
+
+/**
+ * UTF-8 encoding with strict validation.
+ *
+ * - `encode` converts a string to its UTF-8 byte representation.
+ * - `decode` validates strictly — invalid UTF-8 throws (does NOT silently
+ *   replace with U+FFFD like `Buffer.toString('utf-8')` does).
+ * - `isValid` is a cheap check without allocation.
+ *
+ * @example
+ * ```ts
+ * const bytes = Utf8.encode('Hola 🦀');     // <Buffer 48 6f 6c 61 20 f0 9f a6 80>
+ * const text = Utf8.decode(bytes);           // "Hola 🦀"
+ * Utf8.isValid(Buffer.from([0xff]));         // false
+ * ```
+ */
+export const Utf8 = Object.freeze({
+  /**
+   * Encode a string to its UTF-8 byte representation.
+   */
+  encode(input: string): Buffer {
+    if (typeof input !== 'string') {
+      throw new TypeError('Utf8.encode: input must be a string');
+    }
+    return native.utf8Encode(input) as Buffer;
+  },
+
+  /**
+   * Decode UTF-8 bytes to a string.
+   *
+   * @throws {RangeError} on invalid UTF-8 (truncated multi-byte, lone surrogate,
+   *   invalid start byte, etc.). Unlike `Buffer.toString('utf-8')`, this does
+   *   NOT silently substitute U+FFFD.
+   */
+  decode(input: Buffer): string {
+    if (!Buffer.isBuffer(input)) {
+      throw new TypeError('Utf8.decode: input must be a Buffer');
+    }
+    return native.utf8Decode(input) as string;
+  },
+
+  /**
+   * Check whether the given bytes are valid UTF-8.
+   */
+  isValid(input: Buffer): boolean {
+    if (!Buffer.isBuffer(input)) {
+      throw new TypeError('Utf8.isValid: input must be a Buffer');
+    }
+    return native.utf8IsValid(input) as boolean;
+  },
+});

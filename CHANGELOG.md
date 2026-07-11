@@ -5,6 +5,94 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] — 2026-07-08
+
+### ✨ Added — Encoding helpers + Android x86_64
+
+v0.4.0 introduces native encoding helpers (Base64, Hex, UTF-8) and adds
+Android x86_64 to the supported platform list. Fully backwards compatible
+with v0.3.x.
+
+#### 🆕 Encoding namespaces (Rust-side implementations)
+
+Three new namespaces exported from the top level, backed by the new
+`sc-encoding` crate. All operations are audited RustCrypto ecosystem
+routines with strict validation (no lossy conversions).
+
+- **`Base64`**
+  - `encode(bytes) → string` — RFC 4648 standard (with `=` padding)
+  - `decode(string) → Buffer` — throws on invalid input
+  - `encodeUrlSafe(bytes) → string` — `-` and `_` alphabet, no padding
+  - `decodeUrlSafe(string) → Buffer`
+
+- **`Hex`**
+  - `encode(bytes) → string` — lowercase output
+  - `encodeUpper(bytes) → string` — uppercase output
+  - `decode(string) → Buffer` — case-insensitive
+  - `isValid(string) → boolean` — cheap format check
+
+- **`Utf8`**
+  - `encode(string) → Buffer` — UTF-8 bytes
+  - `decode(bytes) → string` — **strict** validation, throws on invalid
+    UTF-8 (unlike `Buffer.toString('utf-8')` which silently substitutes U+FFFD)
+  - `isValid(bytes) → boolean`
+
+Quick example:
+
+```typescript
+import { Base64, Hex, Utf8 } from '@brashkie/signalis-core';
+
+const bytes = Utf8.encode('Hola 🦀');
+const b64 = Base64.encode(bytes);          // 'SG9sYSDwn6aA'
+const hex = Hex.encode(bytes);             // '486f6c6120f09fa680'
+const back = Utf8.decode(Base64.decode(b64)); // 'Hola 🦀'
+```
+
+#### 🆕 New crate: `sc-encoding`
+
+A dedicated Rust crate for encoding routines, separated from `sc-utils`
+to keep encoding logic isolated from cryptographic utilities. This makes
+the codebase easier to audit and lets adopters pull in just what they need.
+
+Dependencies (all RustCrypto ecosystem):
+- `base64` v0.22 — RFC 4648 encoder/decoder
+- `hex` v0.4 — Base16 encoder/decoder
+- Rust standard library for UTF-8 validation
+
+#### 🆕 Android x86_64 support
+
+New sub-package `@brashkie/signalis-core-android-x64` published to npm.
+Primary use cases:
+- **Android Emulator** — runs x86_64, so devs testing apps in Android
+  Studio's emulator now get native binaries automatically
+- **Termux on x86 tablets / Chromebooks** — install via
+  `pkg install nodejs && npm install @brashkie/signalis-core`
+
+Total platforms supported: **10** (was 9 in v0.3.1).
+
+### 🔄 Changed
+- `VERSION` bumped to `'0.4.0'`
+- `Cargo.toml` workspace: version 0.3.x → 0.4.0
+- `sc-node`: 10 new `#[napi]` exports for the encoding functions
+- `optionalDependencies` in `package.json`: adds `android-x64` (10 sub-packages total)
+- `napi.triples.additional`: adds `x86_64-linux-android`
+- `.github/workflows/release.yml`: adds `x86_64-linux-android` build job
+- `scripts/create-npm-dirs.js`: adds `android-x64` to `PLATFORMS` array
+
+### ✅ Compatibility
+**100% backwards compatible with v0.3.x.** No API changes. No breaking
+behavior. Existing code continues to work; the encoding namespaces are
+purely additive.
+
+### 📋 What's next (v0.5.0 candidates)
+- Buffer / ByteArray utility helpers (`sc-encoding` extension)
+- XChaCha20-Poly1305 (extended-nonce AEAD)
+- Argon2id password hashing
+- PBKDF2-SHA256
+- HKDF-SHA512
+
+---
+
 ## [0.3.0] — 2026-06-17
 
 ### ✨ Added — Multi-Platform Expansion + New Primitives

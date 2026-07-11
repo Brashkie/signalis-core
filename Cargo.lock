@@ -47,6 +47,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "base64"
+version = "0.22.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
+
+[[package]]
 name = "bitflags"
 version = "2.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -265,6 +271,12 @@ dependencies = [
  "opaque-debug",
  "polyval",
 ]
+
+[[package]]
+name = "hex"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "hex-literal"
@@ -511,7 +523,7 @@ dependencies = [
 
 [[package]]
 name = "sc-aes"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -525,7 +537,7 @@ dependencies = [
 
 [[package]]
 name = "sc-chacha20poly1305"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "chacha20poly1305",
  "hex-literal",
@@ -534,7 +546,7 @@ dependencies = [
 
 [[package]]
 name = "sc-curve25519"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "curve25519-dalek",
  "hex-literal",
@@ -547,7 +559,7 @@ dependencies = [
 
 [[package]]
 name = "sc-ed25519"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "ed25519-dalek",
  "hex-literal",
@@ -557,8 +569,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sc-encoding"
+version = "0.4.0"
+dependencies = [
+ "base64",
+ "hex",
+ "thiserror",
+]
+
+[[package]]
 name = "sc-hkdf"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "hex-literal",
  "hkdf",
@@ -569,7 +590,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hmac"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "hex-literal",
  "hmac",
@@ -580,7 +601,7 @@ dependencies = [
 
 [[package]]
 name = "sc-node"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "napi",
  "napi-build",
@@ -590,6 +611,7 @@ dependencies = [
  "sc-chacha20poly1305",
  "sc-curve25519",
  "sc-ed25519",
+ "sc-encoding",
  "sc-hkdf",
  "sc-hmac",
  "sc-sha256",
@@ -599,7 +621,7 @@ dependencies = [
 
 [[package]]
 name = "sc-sha256"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "hex-literal",
  "sha2",
@@ -607,7 +629,7 @@ dependencies = [
 
 [[package]]
 name = "sc-utils"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "rand",
  "subtle",
@@ -617,7 +639,7 @@ dependencies = [
 
 [[package]]
 name = "sc-xed25519"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "curve25519-dalek",
  "rand",

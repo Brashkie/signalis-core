@@ -64,6 +64,10 @@ export {
   CHACHA20_POLY1305_KEY_SIZE,
   CHACHA20_POLY1305_NONCE_SIZE,
   CHACHA20_POLY1305_TAG_SIZE,
+  // NEW in v0.4.0
+  Base64,
+  Hex,
+  Utf8,
   // ────────────────
   nativeVersion,
 } from './core';
@@ -191,13 +195,29 @@ export {
  *
  * Bumped on every release.
  */
-export const VERSION = '0.2.0' as const;
+export const VERSION = '0.4.0' as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Default export — Convenience namespace
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { Curve25519, Ed25519, XEd25519, HKDF, AES_GCM, AES_CBC, HMAC, SHA256, nativeVersion } from './core';
+import {
+  Curve25519,
+  Ed25519,
+  XEd25519,
+  HKDF,
+  AES_GCM,
+  AES_CBC,
+  HMAC,
+  SHA256,
+  ChaCha20Poly1305,
+  Base64,
+  Hex,
+  Utf8,
+  constantTimeEq,
+  nativeSecureRandom,
+  nativeVersion,
+} from './core';
 import {
   secureRandom,
   randomNonce,
@@ -219,6 +239,7 @@ import {
  *
  * const kp = sc.Curve25519.generateKeyPair();
  * const nonce = sc.secureRandom(12);
+ * const b64 = sc.Base64.encode(nonce);
  * ```
  */
 const SignalisCore = Object.freeze({
@@ -229,22 +250,29 @@ const SignalisCore = Object.freeze({
   HKDF,
   AES_GCM,
   AES_CBC,
+  ChaCha20Poly1305,
   HMAC,
   SHA256,
   // Random
   secureRandom,
+  nativeSecureRandom,
   randomNonce,
   randomIv,
   randomKey,
-  // Encoding
+  // Encoding (JS-side legacy helpers — use Base64/Hex/Utf8 for native)
   toHex,
   fromHex,
   toBase64,
   fromBase64,
+  // Encoding (NEW v0.4.0 — native, RFC-compliant)
+  Base64,
+  Hex,
+  Utf8,
   // Security
   constantTimeEqual,
+  constantTimeEq,
   // Version
-  VERSION: '0.2.0' as const,
+  VERSION,
   nativeVersion,
 });
 

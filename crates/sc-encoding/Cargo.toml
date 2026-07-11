@@ -1,0 +1,17 @@
+[package]
+name = "sc-encoding"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Encoding/decoding helpers for signalis-core (Base64, Hex, UTF-8)"
+
+[dependencies]
+base64 = { workspace = true }
+hex = { workspace = true }
+thiserror = { workspace = true }

@@ -76,6 +76,15 @@ const PLATFORMS = [
     cpu: 'arm',
     nodeFile: 'signalis-core.android-arm-eabi.node',
   },
+  // ─── Android x64 (NEW in v0.4.0) ──────────────────────────────────
+  // Used by the Android Emulator (which runs x86_64), and for Termux
+  // on Chromebooks or x86 tablets.
+  {
+    folder: 'android-x64',
+    os: 'android',
+    cpu: 'x64',
+    nodeFile: 'signalis-core.android-x64.node',
+  },
 ];
 
 const npmDir = path.join(__dirname, '..', 'npm');

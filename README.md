@@ -32,6 +32,71 @@ Built with **Rust** for safety and speed, exposed to Node.js via [napi-rs](https
 
 ---
 
+## 🎉 What's New in v0.4.0
+
+**v0.4.0 ships native encoding helpers (Base64, Hex, UTF-8) + Android x86_64 target — fully backwards compatible with v0.3.x.**
+
+| New | Description |
+|-----|-------------|
+| 🆕 **`Base64` namespace** | RFC 4648 standard + URL-safe variant (no padding), Rust-side implementation |
+| 🆕 **`Hex` namespace** | Lowercase/uppercase encode, case-insensitive decode, `isValid()` cheap check |
+| 🆕 **`Utf8` namespace** | **Strict** UTF-8 validation — throws on malformed bytes (unlike `Buffer.toString('utf-8')` which silently substitutes U+FFFD) |
+| 🆕 **Android x86_64** | Native binary for the Android Emulator + Chromebooks + x86 tablets |
+| 🆕 **`sc-encoding` crate** | Dedicated Rust crate — separates encoding logic from crypto for easier audit |
+
+### Quick Example: Base64 / Hex / Utf8
+
+```ts
+import { Base64, Hex, Utf8 } from '@brashkie/signalis-core';
+
+// UTF-8 with strict validation
+const bytes = Utf8.encode('Hola 🦀');           // Buffer <48 6f 6c 61 20 f0 9f a6 80>
+const roundTrip = Utf8.decode(bytes);            // "Hola 🦀"
+
+// Base64 standard (with padding)
+const b64 = Base64.encode(bytes);                // "SG9sYSDwn6aA"
+const decoded = Base64.decode(b64);              // matches original
+
+// Base64 URL-safe (no padding, no + or /)
+const urlSafe = Base64.encodeUrlSafe(bytes);     // safe in URLs, filenames, JWTs
+
+// Hex
+const hex = Hex.encode(bytes);                   // "486f6c6120f09fa680"
+const hexUpper = Hex.encodeUpper(bytes);         // "486F6C6120F09FA680"
+const back = Hex.decode('DEADBEEF');             // case-insensitive
+Hex.isValid('deadbeef');                          // true
+Hex.isValid('nope!');                             // false
+
+// UTF-8 validation (cheap, no allocation)
+Utf8.isValid(Buffer.from([0xff]));                // false (0xff is never valid UTF-8)
+```
+
+### Why Strict UTF-8 Validation Matters
+
+Node's built-in `Buffer.toString('utf-8')` **silently substitutes U+FFFD** (the replacement character) when it encounters invalid bytes. For most app code that's fine. But when you're processing signed messages, verifying MACs, or handling attacker-supplied input, **you want to know** if bytes are malformed rather than continue with silently-corrupted data.
+
+```ts
+const badBytes = Buffer.from([0xff, 0xfe]);
+
+// Node's built-in: no error, produces "\uFFFD\uFFFD"
+badBytes.toString('utf-8');
+
+// signalis-core: throws
+Utf8.decode(badBytes);  // → RangeError
+```
+
+### Android x86_64 Use Cases
+
+- **Android Emulator** (Android Studio) — emulator runs x86_64, so devs testing apps now get native binaries automatically
+- **Termux on Chromebooks / x86 tablets** — `pkg install nodejs && npm install @brashkie/signalis-core`
+- **NodeJS-on-Android** with x86 device farms
+
+**Total platforms supported now: 10** (was 9 in v0.3.1).
+
+See [CHANGELOG.md](./CHANGELOG.md) for full details.
+
+---
+
 ## 🎉 What's New in v0.3.0
 
 **v0.3.0 ships Android support + ChaCha20-Poly1305 — fully backwards compatible with v0.2.0.**
@@ -83,7 +148,7 @@ See [MIGRATION.md](./MIGRATION.md) for upgrade details (it's a drop-in replaceme
 
 ## 🌍 Supported Platforms
 
-`@brashkie/signalis-core` ships prebuilt native binaries for **9 platforms** via npm `optionalDependencies`. The right binary downloads automatically based on your host OS + arch.
+`@brashkie/signalis-core` ships prebuilt native binaries for **10 platforms** via npm `optionalDependencies`. The right binary downloads automatically based on your host OS + arch.
 
 | OS | Architecture | Sub-package | Status |
 |----|--------------|-------------|--------|
@@ -96,13 +161,16 @@ See [MIGRATION.md](./MIGRATION.md) for upgrade details (it's a drop-in replaceme
 | 🪟 Windows | arm64 | `signalis-core-win32-arm64-msvc` | ✅ |
 | 🤖 Android | arm64-v8a | `signalis-core-android-arm64` | 🆕 v0.3.0 |
 | 🤖 Android | armv7 | `signalis-core-android-arm-eabi` | 🆕 v0.3.0 |
+| 🤖 Android | x86_64 | `signalis-core-android-x64` | 🆕 v0.4.0 |
 
-Coming in v0.4.0: **iOS arm64**, **WASM (browsers)**, **FreeBSD x64**.
+Coming in future releases: **WASM (browsers)**, **iOS arm64**, **FreeBSD x64**, **RISC-V**.
 
 ### Android Installation
 
 Same `npm install` works in any Node.js environment running on Android, including:
 - **Termux** on Android phones (`pkg install nodejs`)
+- **Termux on Chromebooks / x86 tablets** → uses `android-x64` binary automatically
+- **Android Emulator** (Android Studio) → x86_64 host, uses `android-x64` binary
 - **React Native** with Android target
 - **NodeJS-Mobile** apps
 - Custom embedded Node builds for IoT
@@ -111,7 +179,7 @@ Same `npm install` works in any Node.js environment running on Android, includin
 # On Android (Termux for example):
 pkg install nodejs
 npm install @brashkie/signalis-core
-# → npm automatically downloads signalis-core-android-arm64 sub-package
+# → npm automatically downloads the right sub-package for your arch
 ```
 
 ---
@@ -120,6 +188,7 @@ npm install @brashkie/signalis-core
 
 - [🔐 Signalis Core](#-signalis-core)
   - [✨ What is Signalis Core?](#-what-is-signalis-core)
+  - [🎉 What's New in v0.4.0](#-whats-new-in-v040)
   - [🎉 What's New in v0.3.0](#-whats-new-in-v030)
   - [🌍 Supported Platforms](#-supported-platforms)
   - [📋 Table of Contents](#-table-of-contents)
@@ -178,7 +247,7 @@ npm install @brashkie/signalis-core
 | 📦 **Dual Package** | Works in CommonJS, ESM, and TypeScript projects |
 | 🎯 **Type-Safe** | Full TypeScript definitions with branded types and rich error classes |
 | ✅ **Test Vectors** | Validated against RFC 5869, RFC 7748, RFC 8032, RFC 4231, and NIST vectors |
-| 🌍 **Cross-Platform** | Prebuilt binaries for Windows, macOS, Linux (x64, ARM) + **Android arm64/armv7** |
+| 🌍 **Cross-Platform** | Prebuilt binaries for Windows, macOS, Linux (x64, ARM) + **Android arm64/armv7/x86_64** |
 | 🔒 **Constant-Time** | Side-channel resistant comparisons via `subtle` crate |
 | 🧹 **Auto-Zeroization** | Secrets are wiped from memory automatically |
 | 📊 **99%+ Coverage** | Comprehensive test suite with 269+ assertions |
@@ -531,6 +600,44 @@ ChaCha20Poly1305.TAG_SIZE;     // 16 (appended to ciphertext)
 | Apple Silicon (M-series) | Either (close) | Both well-optimized |
 
 **Security:** ChaCha20-Poly1305 and AES-GCM have equivalent security properties. The choice is purely about performance on your target.
+
+### Base64 / Hex / UTF-8 🆕
+
+Native (Rust-side) encoding helpers introduced in v0.4.0. Backed by the `sc-encoding` crate, which uses the audited RustCrypto ecosystem (`base64` and `hex` crates) plus Rust's built-in strict UTF-8 validation.
+
+**Why not just use Node's `Buffer.toString('base64')`?**
+- `Buffer.toString('utf-8')` silently substitutes `U+FFFD` for invalid bytes. Ours throws — better for signature verification, forensic parsing, adversarial input.
+- Consistent error surface across the whole library (same `RangeError` shape as the crypto primitives).
+- Same audit surface — one crate to review, not "whatever Node happens to ship".
+
+```typescript
+import { Base64, Hex, Utf8 } from '@brashkie/signalis-core';
+
+// ─── Base64 (standard, RFC 4648) ───────────────────────────────────
+Base64.encode(Buffer.from('hello'));          // "aGVsbG8="
+Base64.decode('aGVsbG8=');                     // <Buffer 68 65 6c 6c 6f>
+
+// ─── Base64 URL-safe (no padding, no + or /) ───────────────────────
+Base64.encodeUrlSafe(Buffer.from('hello'));    // "aGVsbG8"
+Base64.decodeUrlSafe('aGVsbG8');
+
+// ─── Hex ────────────────────────────────────────────────────────────
+Hex.encode(Buffer.from([0xde, 0xad]));         // "dead"
+Hex.encodeUpper(Buffer.from([0xde, 0xad]));    // "DEAD"
+Hex.decode('DEADBEEF');                        // case-insensitive
+Hex.isValid('deadbeef');                        // true
+Hex.isValid('nope');                            // false — invalid chars
+
+// ─── UTF-8 (strict) ─────────────────────────────────────────────────
+Utf8.encode('Hola 🦀');                        // Buffer with 9 bytes
+Utf8.decode(Buffer.from([0xc3, 0xb1]));        // "ñ"
+Utf8.decode(Buffer.from([0xff]));              // → throws RangeError
+Utf8.isValid(Buffer.from([0xff]));             // false (no throw)
+```
+
+**Errors:** Every decode operation throws `RangeError` (subclass of `Error`) with a descriptive message. Invalid characters, wrong lengths, malformed padding, and invalid UTF-8 sequences all follow the same pattern.
+
+**Performance:** These functions have one NAPI hop each. For small strings the overhead is negligible; for hot loops (millions of ops/sec on tiny inputs) prefer `Buffer.toString()` from Node's built-in and only reach for `Utf8.decode` when you need strict validation.
 
 ### HMAC-SHA256
 
