@@ -5,6 +5,32 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] — 2026-08-08
+
+### ✨ Added — Buffer/byte-array utilities (completes Phase 3)
+
+Small, pure-TypeScript helpers that round out the utility layer. No native or
+API-breaking changes; fully backwards compatible with v0.4.0.
+
+- **`split(buf, sizes)`** — the inverse of `concat`: divide a Buffer into
+  consecutive segments. Trailing bytes come back as a final segment. Ideal for
+  deserializing a `nonce ‖ ciphertext ‖ tag` blob.
+- **`bytesEqual(a, b)`** — fast, **non**-constant-time equality for *public*
+  data (headers, identifiers). For secrets, keep using `constantTimeEqual`.
+- **`concatBytes(...arrays)`** — the `Uint8Array` counterpart of `concat`, for
+  browser / WASM environments without Node's `Buffer`.
+- **`splitBytes(bytes, sizes)`** — the `Uint8Array` counterpart of `split`
+  (segments are zero-copy `subarray` views).
+
+All new `split*` helpers validate their sizes and throw `RangeError` on
+negative, non-integer, or oversized inputs.
+
+### 📝 Docs
+
+- Synced the roadmap with reality: several Phase 3 items (`randomIv`,
+  `randomNonce`, validators, buffer utils) already shipped but were still marked
+  pending. **Phase 3 is now 100%.**
+
 ## [0.4.0] — 2026-07-08
 
 ### ✨ Added — Encoding helpers + Android x86_64

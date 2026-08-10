@@ -199,3 +199,113 @@ export function xor(a: Buffer, b: Buffer): Buffer {
   }
   return result;
 }
+
+/**
+ * Split a Buffer into consecutive segments of the given sizes.
+ *
+ * The inverse of {@link concat}: useful for deserializing a blob that packs
+ * several fixed-size fields, e.g. splitting `nonce ‖ ciphertext ‖ tag`.
+ *
+ * If the segment sizes sum to less than the buffer length, the trailing bytes
+ * are returned as one final segment. Pass sizes that sum to exactly the buffer
+ * length to avoid the remainder.
+ *
+ * @throws {RangeError} If any size is not a non-negative integer, or if the
+ *   sizes sum to more than the buffer length.
+ *
+ * @example
+ * const [nonce, rest] = split(blob, [12]);
+ * const [nonce, ct, tag] = split(blob, [12, blob.length - 28, 16]);
+ */
+export function split(buf: Buffer, sizes: number[]): Buffer[] {
+  let total = 0;
+  for (const size of sizes) {
+    if (!Number.isInteger(size) || size < 0) {
+      throw new RangeError(`each size must be a non-negative integer, got ${size}`);
+    }
+    total += size;
+  }
+  if (total > buf.length) {
+    throw new RangeError(
+      `sizes sum to ${total} but buffer is only ${buf.length} byte(s) long`,
+    );
+  }
+
+  const segments: Buffer[] = [];
+  let offset = 0;
+  for (const size of sizes) {
+    segments.push(buf.subarray(offset, offset + size));
+    offset += size;
+  }
+  if (offset < buf.length) {
+    segments.push(buf.subarray(offset));
+  }
+  return segments;
+}
+
+/**
+ * Compare two Buffers for equality (NON constant-time).
+ *
+ * Use this for **public** data (headers, identifiers, non-secret metadata)
+ * where timing side channels don't matter and speed does. For anything secret
+ * (MAC tags, key material), use {@link constantTimeEqual} instead.
+ */
+export function bytesEqual(a: Buffer, b: Buffer): boolean {
+  return a.length === b.length && a.equals(b);
+}
+
+/**
+ * Concatenate several `Uint8Array`s into one.
+ *
+ * The `Uint8Array` counterpart of {@link concat}, for environments without
+ * Node's `Buffer` (browsers, WASM). Accepts `Buffer`s too, since they are
+ * `Uint8Array`s.
+ */
+export function concatBytes(...arrays: Uint8Array[]): Uint8Array {
+  let total = 0;
+  for (const arr of arrays) {
+    total += arr.length;
+  }
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const arr of arrays) {
+    out.set(arr, offset);
+    offset += arr.length;
+  }
+  return out;
+}
+
+/**
+ * Split a `Uint8Array` into consecutive segments of the given sizes.
+ *
+ * The `Uint8Array` counterpart of {@link split}. Segments are views into the
+ * same underlying memory (`subarray`), not copies.
+ *
+ * @throws {RangeError} If any size is not a non-negative integer, or if the
+ *   sizes sum to more than the array length.
+ */
+export function splitBytes(bytes: Uint8Array, sizes: number[]): Uint8Array[] {
+  let total = 0;
+  for (const size of sizes) {
+    if (!Number.isInteger(size) || size < 0) {
+      throw new RangeError(`each size must be a non-negative integer, got ${size}`);
+    }
+    total += size;
+  }
+  if (total > bytes.length) {
+    throw new RangeError(
+      `sizes sum to ${total} but array is only ${bytes.length} byte(s) long`,
+    );
+  }
+
+  const segments: Uint8Array[] = [];
+  let offset = 0;
+  for (const size of sizes) {
+    segments.push(bytes.subarray(offset, offset + size));
+    offset += size;
+  }
+  if (offset < bytes.length) {
+    segments.push(bytes.subarray(offset));
+  }
+  return segments;
+}

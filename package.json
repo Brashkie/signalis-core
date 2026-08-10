@@ -1,7 +1,7 @@
 {
   "name": "@brashkie/signalis-core",
-  "version": "0.4.0",
-  "description": "Cryptographic primitives for Signal Protocol — Rust-powered Node.js library with Ed25519, XEd25519, Curve25519, HKDF, AES-GCM (with AAD), AES-CBC, ChaCha20-Poly1305, HMAC, SHA-256 (ESM + CJS + TypeScript). Android arm64/armv7 support.",
+  "version": "0.4.1",
+  "description": "Cryptographic primitives for Signal Protocol \u2014 Rust-powered Node.js library with Ed25519, XEd25519, Curve25519, HKDF, AES-GCM (with AAD), AES-CBC, ChaCha20-Poly1305, HMAC, SHA-256 (ESM + CJS + TypeScript). Android arm64/armv7 support.",
   "type": "commonjs",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -46,7 +46,7 @@
     "format": "prettier --write \"src/**/*.{ts,js}\" \"__tests__/**/*.ts\"",
     "format:rust": "cargo fmt --all",
     "clippy": "cargo clippy --workspace --all-targets -- -D warnings",
-    "clean": "node -e \"const fs=require('fs');['dist','target','index.js','index.d.ts'].forEach(p=>fs.rmSync(p,{recursive:true,force:true}));fs.readdirSync('.').filter(f=>f.endsWith('.node')).forEach(f=>fs.rmSync(f,{force:true}));console.log('✓ Cleaned')\"",
+    "clean": "node -e \"const fs=require('fs');['dist','target','index.js','index.d.ts'].forEach(p=>fs.rmSync(p,{recursive:true,force:true}));fs.readdirSync('.').filter(f=>f.endsWith('.node')).forEach(f=>fs.rmSync(f,{force:true}));console.log('\u2713 Cleaned')\"",
     "version": "napi version"
   },
   "files": [
@@ -115,16 +115,16 @@
     }
   },
   "optionalDependencies": {
-    "@brashkie/signalis-core-win32-x64-msvc": "0.4.0",
-    "@brashkie/signalis-core-win32-arm64-msvc": "0.4.0",
-    "@brashkie/signalis-core-darwin-x64": "0.4.0",
-    "@brashkie/signalis-core-darwin-arm64": "0.4.0",
-    "@brashkie/signalis-core-linux-x64-gnu": "0.4.0",
-    "@brashkie/signalis-core-linux-x64-musl": "0.4.0",
-    "@brashkie/signalis-core-linux-arm64-gnu": "0.4.0",
-    "@brashkie/signalis-core-android-arm64": "0.4.0",
-    "@brashkie/signalis-core-android-arm-eabi": "0.4.0",
-    "@brashkie/signalis-core-android-x64": "0.4.0"
+    "@brashkie/signalis-core-win32-x64-msvc": "0.4.1",
+    "@brashkie/signalis-core-win32-arm64-msvc": "0.4.1",
+    "@brashkie/signalis-core-darwin-x64": "0.4.1",
+    "@brashkie/signalis-core-darwin-arm64": "0.4.1",
+    "@brashkie/signalis-core-linux-x64-gnu": "0.4.1",
+    "@brashkie/signalis-core-linux-x64-musl": "0.4.1",
+    "@brashkie/signalis-core-linux-arm64-gnu": "0.4.1",
+    "@brashkie/signalis-core-android-arm64": "0.4.1",
+    "@brashkie/signalis-core-android-arm-eabi": "0.4.1",
+    "@brashkie/signalis-core-android-x64": "0.4.1"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.4",

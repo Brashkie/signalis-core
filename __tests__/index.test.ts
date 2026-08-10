@@ -26,6 +26,10 @@ import {
   concat,
   zeroize,
   xor,
+  split,
+  bytesEqual,
+  concatBytes,
+  splitBytes,
   // Validators
   assertBuffer,
   assertBufferLength,
@@ -69,8 +73,8 @@ import SignalisCoreDefault from '../src';
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('Module exports', () => {
-  it('exports VERSION as 0.4.0', () => {
-    expect(VERSION).toBe('0.4.0');
+  it('exports VERSION as 0.4.1', () => {
+    expect(VERSION).toBe('0.4.1');
   });
 
   it('exports nativeVersion as string', () => {
@@ -124,7 +128,7 @@ describe('Module exports', () => {
     expect(SignalisCoreDefault.AES_CBC).toBeDefined();
     expect(SignalisCoreDefault.HMAC).toBeDefined();
     expect(SignalisCoreDefault.SHA256).toBeDefined();
-    expect(SignalisCoreDefault.VERSION).toBe('0.4.0');
+    expect(SignalisCoreDefault.VERSION).toBe('0.4.1');
     expect(typeof SignalisCoreDefault.secureRandom).toBe('function');
     expect(Object.isFrozen(SignalisCoreDefault)).toBe(true);
   });
@@ -669,6 +673,90 @@ describe('Buffer helpers', () => {
 
   it('xor works on empty buffers', () => {
     expect(xor(Buffer.alloc(0), Buffer.alloc(0)).length).toBe(0);
+  });
+
+  it('split divides a buffer into the given sizes', () => {
+    const blob = Buffer.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    const [a, b, c] = split(blob, [3, 4, 3]);
+    expect([...a!]).toEqual([1, 2, 3]);
+    expect([...b!]).toEqual([4, 5, 6, 7]);
+    expect([...c!]).toEqual([8, 9, 10]);
+  });
+
+  it('split returns trailing bytes as a final segment', () => {
+    const blob = Buffer.from([1, 2, 3, 4, 5]);
+    const parts = split(blob, [2]);
+    expect(parts).toHaveLength(2);
+    expect([...parts[0]!]).toEqual([1, 2]);
+    expect([...parts[1]!]).toEqual([3, 4, 5]);
+  });
+
+  it('split with exact sizes leaves no remainder', () => {
+    const parts = split(Buffer.from([1, 2, 3, 4]), [2, 2]);
+    expect(parts).toHaveLength(2);
+  });
+
+  it('split rejects sizes exceeding the buffer', () => {
+    expect(() => split(Buffer.alloc(4), [2, 3])).toThrow(RangeError);
+  });
+
+  it('split rejects negative or non-integer sizes', () => {
+    expect(() => split(Buffer.alloc(4), [-1])).toThrow(RangeError);
+    expect(() => split(Buffer.alloc(4), [1.5])).toThrow(RangeError);
+  });
+
+  it('split is the inverse of concat', () => {
+    const parts = [Buffer.from('abc'), Buffer.from('de'), Buffer.from('fghi')];
+    const joined = concat(parts);
+    const back = split(joined, [3, 2, 4]);
+    expect(back.map((p) => p.toString())).toEqual(['abc', 'de', 'fghi']);
+  });
+
+  it('bytesEqual compares buffers', () => {
+    expect(bytesEqual(Buffer.from([1, 2, 3]), Buffer.from([1, 2, 3]))).toBe(true);
+    expect(bytesEqual(Buffer.from([1, 2, 3]), Buffer.from([1, 2, 4]))).toBe(false);
+    expect(bytesEqual(Buffer.from([1, 2]), Buffer.from([1, 2, 3]))).toBe(false);
+    expect(bytesEqual(Buffer.alloc(0), Buffer.alloc(0))).toBe(true);
+  });
+
+  it('concatBytes joins Uint8Arrays', () => {
+    const out = concatBytes(new Uint8Array([1, 2]), new Uint8Array([3]), new Uint8Array([4, 5]));
+    expect(out).toBeInstanceOf(Uint8Array);
+    expect([...out]).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('concatBytes with no arguments returns empty', () => {
+    expect(concatBytes().length).toBe(0);
+  });
+
+  it('splitBytes divides a Uint8Array', () => {
+    const bytes = new Uint8Array([1, 2, 3, 4, 5, 6]);
+    const [a, b] = splitBytes(bytes, [2, 4]);
+    expect([...a!]).toEqual([1, 2]);
+    expect([...b!]).toEqual([3, 4, 5, 6]);
+  });
+
+  it('splitBytes rejects oversized sizes', () => {
+    expect(() => splitBytes(new Uint8Array(3), [5])).toThrow(RangeError);
+  });
+
+  it('splitBytes rejects negative or non-integer sizes', () => {
+    expect(() => splitBytes(new Uint8Array(4), [-1])).toThrow(RangeError);
+    expect(() => splitBytes(new Uint8Array(4), [2.5])).toThrow(RangeError);
+  });
+
+  it('splitBytes returns trailing bytes as a final segment', () => {
+    const parts = splitBytes(new Uint8Array([1, 2, 3, 4, 5]), [2]);
+    expect(parts).toHaveLength(2);
+    expect([...parts[1]!]).toEqual([3, 4, 5]);
+  });
+
+  it('concatBytes / splitBytes round-trip', () => {
+    const parts = [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5])];
+    const joined = concatBytes(...parts);
+    const back = splitBytes(joined, [3, 2]);
+    expect([...back[0]!]).toEqual([1, 2, 3]);
+    expect([...back[1]!]).toEqual([4, 5]);
   });
 });
 

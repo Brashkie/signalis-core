@@ -66,13 +66,13 @@ Common helpers used by modern cryptographic software.
 - [x] Base64 helpers *(v0.4.0 — `Base64` namespace, standard + URL-safe)*
 - [x] Hex helpers *(v0.4.0 — `Hex` namespace)*
 - [x] UTF-8 helpers *(v0.4.0 — `Utf8` namespace, strict validation)*
-- [ ] Buffer utilities
-- [ ] Byte array utilities
-- [ ] Random IV generation
-- [ ] Random nonce generation
-- [ ] Secure validation helpers
+- [x] Buffer utilities *(`concat`, `xor`, `zeroize`; `split` added v0.4.1)*
+- [x] Byte array utilities *(v0.4.1 — `concatBytes`, `splitBytes` over `Uint8Array` for browser/WASM)*
+- [x] Random IV generation *(`randomIv` — 16-byte AES-CBC IV)*
+- [x] Random nonce generation *(`randomNonce` — 12-byte AEAD nonce)*
+- [x] Secure validation helpers *(`validators.ts` — `assertBuffer`, `assertLength`, …)*
 
-**Progress: 6 / 11 (55%)**
+**Progress: 11 / 11 (100%) ✅**
 
 ---
 
@@ -244,7 +244,7 @@ Long-term enhancements.
 |-------|----------|
 | 1. Cryptographic foundation | ✅ 100% (13/13) |
 | 2. Multi-platform support | 🟡 71% (10/14) |
-| 3. Cryptographic utilities | 🟡 55% (6/11) |
+| 3. Cryptographic utilities | ✅ 100% (11/11) |
 | 4. Modern cryptographic primitives | 🟡 22% (2/9) |
 | 5. Performance | 🔴 0% (0/9) |
 | 6. Security hardening | 🟡 9% (1/11) |
@@ -255,7 +255,7 @@ Long-term enhancements.
 | 11. Advanced cryptography | 🔴 0% (0/10) |
 | 12. Future improvements | 🔴 0% (0/8) |
 
-**Total: 44 / 119 (37%)**
+**Total: 49 / 119 (41%)**
 
 ---
 
@@ -263,7 +263,7 @@ Long-term enhancements.
 
 Not committed — this is a menu of the next natural steps, in rough priority order:
 
-1. **Finish Phase 3 (Utilities)** — Buffer/ByteArray utilities, Random IV/nonce generators, secure validation helpers. Small items, cohesive with what's already there.
+1. ~~**Finish Phase 3 (Utilities)**~~ — ✅ done in v0.4.1 (`split`, `bytesEqual`, `concatBytes`, `splitBytes`; the roadmap was also synced with helpers that already shipped).
 2. **XChaCha20-Poly1305** — extended-nonce AEAD (24-byte nonces), useful when you can't guarantee nonce uniqueness with 12 bytes.
 3. **PBKDF2-SHA256** — password-based KDF, small addition, useful for key derivation from user passwords.
 4. **Argon2id** — modern password hashing, replaces PBKDF2 for greenfield use cases.

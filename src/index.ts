@@ -135,6 +135,11 @@ export {
   concat,
   zeroize,
   xor,
+  split,
+  bytesEqual,
+  // Byte-array (Uint8Array) helpers — for browser / WASM environments
+  concatBytes,
+  splitBytes,
 } from './utils';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -195,7 +200,7 @@ export {
  *
  * Bumped on every release.
  */
-export const VERSION = '0.4.0' as const;
+export const VERSION = '0.4.1' as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Default export — Convenience namespace
