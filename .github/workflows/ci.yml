@@ -47,7 +47,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run tests (excluding NAPI bindings)
-        run: cargo test --workspace --exclude sc-node --verbose
+        run: cargo test --workspace --exclude sc-node --exclude sc-benches --verbose
 
   # ═══════════════════════════════════════════════════════════════════════════
   # Build native binaries for all 7 platforms

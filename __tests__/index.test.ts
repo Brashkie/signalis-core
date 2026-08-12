@@ -67,14 +67,15 @@ import {
   nativeVersion,
 } from '../src';
 import SignalisCoreDefault from '../src';
+import pkg from '../package.json';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Module Exports
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe('Module exports', () => {
-  it('exports VERSION as 0.4.1', () => {
-    expect(VERSION).toBe('0.4.1');
+  it('exports VERSION matching package.json', () => {
+    expect(VERSION).toBe(pkg.version);
   });
 
   it('exports nativeVersion as string', () => {
@@ -128,7 +129,7 @@ describe('Module exports', () => {
     expect(SignalisCoreDefault.AES_CBC).toBeDefined();
     expect(SignalisCoreDefault.HMAC).toBeDefined();
     expect(SignalisCoreDefault.SHA256).toBeDefined();
-    expect(SignalisCoreDefault.VERSION).toBe('0.4.1');
+    expect(SignalisCoreDefault.VERSION).toBe(pkg.version);
     expect(typeof SignalisCoreDefault.secureRandom).toBe('function');
     expect(Object.isFrozen(SignalisCoreDefault)).toBe(true);
   });

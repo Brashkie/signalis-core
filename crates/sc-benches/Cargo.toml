@@ -1,0 +1,33 @@
+[package]
+name = "sc-benches"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "Criterion benchmarks for signalis-core primitives (not published)"
+license = "Apache-2.0"
+
+[dependencies]
+sc-sha256 = { path = "../sc-sha256" }
+sc-aes = { path = "../sc-aes" }
+sc-chacha20poly1305 = { path = "../sc-chacha20poly1305" }
+sc-curve25519 = { path = "../sc-curve25519" }
+sc-hkdf = { path = "../sc-hkdf" }
+
+[dev-dependencies]
+criterion = { workspace = true }
+
+[[bench]]
+name = "hashing"
+harness = false
+
+[[bench]]
+name = "aead"
+harness = false
+
+[[bench]]
+name = "curve"
+harness = false
+
+[[bench]]
+name = "kdf"
+harness = false

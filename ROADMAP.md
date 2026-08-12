@@ -102,13 +102,14 @@ Optimize native execution.
 - [ ] AES-NI acceleration *(implicit via RustCrypto — needs explicit `-C target-feature=+aes` flag in release profile to document)*
 - [ ] ARM Crypto Extensions *(same — implicit today, needs explicit flag)*
 - [ ] NEON optimizations
-- [ ] Zero-copy buffers
-- [ ] Reduced allocations
+- [ ] Zero-copy buffers *(binding audited v0.4.2 — inputs borrowed, outputs moved, no redundant copies; no work needed)*
+- [ ] Reduced allocations *(same audit — no wasteful allocations found in the binding)*
 - [ ] Cache-friendly implementations
-- [ ] Criterion benchmarks
+- [x] Criterion benchmarks *(v0.4.2 — `crates/sc-benches`: SHA256, AES-GCM, ChaCha20-Poly1305, Curve25519, HKDF)*
+- [ ] SHA-256 software-path speedup *(planned — upgrade to `sha2` 0.11 for the `x86-avx2` backend; see `docs/PLAN-sha2-0.11-upgrade.md`. The `sha2` 0.10 `asm` feature was evaluated and rejected: it breaks Windows MSVC. Note: CPUs with SHA-NI already auto-accelerate today.)*
 - [ ] Performance regression detection
 
-**Progress: 0 / 9 (0%)**
+**Progress: 1 / 10 (10%)**
 
 ---
 
@@ -246,7 +247,7 @@ Long-term enhancements.
 | 2. Multi-platform support | 🟡 71% (10/14) |
 | 3. Cryptographic utilities | ✅ 100% (11/11) |
 | 4. Modern cryptographic primitives | 🟡 22% (2/9) |
-| 5. Performance | 🔴 0% (0/9) |
+| 5. Performance | 🟡 10% (1/10) |
 | 6. Security hardening | 🟡 9% (1/11) |
 | 7. Modular architecture | 🟡 75% (6/8) |
 | 8. Developer experience | 🟡 50% (4/8) |
@@ -255,7 +256,7 @@ Long-term enhancements.
 | 11. Advanced cryptography | 🔴 0% (0/10) |
 | 12. Future improvements | 🔴 0% (0/8) |
 
-**Total: 49 / 119 (41%)**
+**Total: 50 / 120 (42%)**
 
 ---
 

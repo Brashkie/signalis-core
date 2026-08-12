@@ -5,6 +5,48 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] — 2026-08-10
+
+### ✨ Added — Criterion benchmark suite (starts Phase 5)
+
+A dedicated, non-published benchmark crate (`crates/sc-benches`) that measures
+the core primitives with [Criterion](https://github.com/bheisler/criterion.rs).
+This establishes a performance baseline before any optimization work — measure
+first, optimize with evidence.
+
+- **`hashing`** — SHA-256 one-shot across input sizes (64 B → 256 KiB) plus the
+  streaming (`Sha256Hasher`) path.
+- **`aead`** — AES-256-GCM vs ChaCha20-Poly1305 side by side across sizes, so
+  the faster cipher on a given machine is visible.
+- **`curve`** — Curve25519 key generation and Diffie-Hellman (the asymmetric
+  handshake cost).
+- **`kdf`** — HKDF-SHA256 extract / expand / derive.
+
+Run with `cargo bench -p sc-benches` (or `--bench hashing`, etc.).
+
+### 📈 Baseline findings (first run, Comet Lake i5-10400)
+
+- **AES-256-GCM** wins on small messages (AES-NI): ~375 MiB/s at 64 B, >1 GiB/s
+  from 1 KiB up. **ChaCha20-Poly1305** overtakes it above ~16 KiB (1.3–1.4 GiB/s).
+  For WhatsApp-style small messages, AES-GCM is the better default.
+- **Curve25519**: keygen ~32.5 µs, Diffie-Hellman ~55 µs — normal for X25519.
+- **HKDF-SHA256**: extract/expand/derive all in the 1–3 µs range.
+- **SHA-256** tops out at ~234 MiB/s. This is the **software** backend: the
+  i5-10400 (Comet Lake) has no SHA-NI. On CPUs that do (Intel 11th-gen+, all AMD
+  Zen), `sha2` 0.10 auto-detects and uses hardware acceleration at runtime with
+  the same binary. A future `sha2` 0.11 upgrade would speed up the software path
+  too — see `docs/PLAN-sha2-0.11-upgrade.md`.
+
+### 🔍 Performance audit (no code changes)
+
+Audited the NAPI binding for wasteful copies/allocations. Finding: it's already
+clean — inputs are borrowed (`&plaintext`), outputs are moved (`Buffer::from(ct)`),
+with **zero `.clone()` and zero redundant `.to_vec()`** on variable-length data.
+The remaining `.to_vec()` calls convert fixed-size arrays (hashes, keys,
+signatures) to the heap, which is necessary. No optimization was manufactured
+where the data didn't justify one; any future change will be driven by the
+benchmark numbers.
+
 ## [0.4.1] — 2026-08-08
 
 ### ✨ Added — Buffer/byte-array utilities (completes Phase 3)

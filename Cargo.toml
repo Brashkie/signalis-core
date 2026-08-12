@@ -12,10 +12,11 @@ members = [
     "crates/sc-utils",
     "crates/sc-encoding",
     "crates/sc-node",
+    "crates/sc-benches",
 ]
 
 [workspace.package]
-version = "0.4.0"
+version = "0.4.2"
 edition = "2021"
 rust-version = "1.80"
 authors = ["Brashkie (Hepein)"]
@@ -48,6 +49,9 @@ hex = "0.4"
 zeroize = { version = "1.7", features = ["zeroize_derive"] }
 subtle = "2.5"
 rand = "0.8"
+
+# Benchmarking (dev-only, used by crates/sc-benches)
+criterion = { version = "0.5", features = ["html_reports"] }
 rand_core = { version = "0.6", features = ["std"] }
 thiserror = "1.0"
 
