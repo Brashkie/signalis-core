@@ -770,6 +770,8 @@ export const CHACHA20_POLY1305_KEY_SIZE = 32;
 export const CHACHA20_POLY1305_NONCE_SIZE = 12;
 /** Poly1305 authentication tag size (bytes), appended to ciphertext. */
 export const CHACHA20_POLY1305_TAG_SIZE = 16;
+/** XChaCha20-Poly1305 extended nonce size (bytes). */
+export const XCHACHA20_POLY1305_NONCE_SIZE = 24;
 
 /**
  * ChaCha20-Poly1305 authenticated encryption with associated data (AEAD).
@@ -878,6 +880,106 @@ export const ChaCha20Poly1305 = Object.freeze({
   KEY_SIZE: CHACHA20_POLY1305_KEY_SIZE,
   /** Nonce size in bytes (12). */
   NONCE_SIZE: CHACHA20_POLY1305_NONCE_SIZE,
+  /** Authentication tag size in bytes (16), appended to ciphertext. */
+  TAG_SIZE: CHACHA20_POLY1305_TAG_SIZE,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// XChaCha20-Poly1305 — extended-nonce AEAD (NEW in v0.4.3)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * XChaCha20-Poly1305: the extended-nonce (24-byte) variant of
+ * ChaCha20-Poly1305. Same key size and security; the larger nonce makes it
+ * safe to pick nonces at random per message without tracking uniqueness.
+ * Prefer this over {@link ChaCha20Poly1305} when you can't guarantee unique
+ * 12-byte nonces.
+ *
+ * @example
+ * import { XChaCha20Poly1305, secureRandom } from '@brashkie/signalis-core';
+ *
+ * const key = secureRandom(32);
+ * const nonce = secureRandom(24);           // random is safe with 24 bytes
+ * const ct = XChaCha20Poly1305.encrypt(key, nonce, Buffer.from('secret'));
+ * const pt = XChaCha20Poly1305.decrypt(key, nonce, ct);
+ */
+export const XChaCha20Poly1305 = Object.freeze({
+  /**
+   * Encrypt + authenticate `plaintext`.
+   *
+   * @param key 32-byte key
+   * @param nonce 24-byte nonce (safe to generate randomly per message)
+   * @param plaintext data to encrypt
+   * @returns ciphertext || tag (16 bytes appended)
+   */
+  encrypt(key: Buffer, nonce: Buffer, plaintext: Buffer): Buffer {
+    if (!Buffer.isBuffer(key) || key.length !== CHACHA20_POLY1305_KEY_SIZE) {
+      throw new RangeError(`key must be ${CHACHA20_POLY1305_KEY_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(nonce) || nonce.length !== XCHACHA20_POLY1305_NONCE_SIZE) {
+      throw new RangeError(`nonce must be ${XCHACHA20_POLY1305_NONCE_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(plaintext)) {
+      throw new TypeError('plaintext must be a Buffer');
+    }
+    return native.xchacha20Poly1305Encrypt(key, nonce, plaintext) as Buffer;
+  },
+
+  /**
+   * Verify-then-decrypt. Returns plaintext on success, throws on auth failure.
+   */
+  decrypt(key: Buffer, nonce: Buffer, ciphertext: Buffer): Buffer {
+    if (!Buffer.isBuffer(key) || key.length !== CHACHA20_POLY1305_KEY_SIZE) {
+      throw new RangeError(`key must be ${CHACHA20_POLY1305_KEY_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(nonce) || nonce.length !== XCHACHA20_POLY1305_NONCE_SIZE) {
+      throw new RangeError(`nonce must be ${XCHACHA20_POLY1305_NONCE_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(ciphertext)) {
+      throw new TypeError('ciphertext must be a Buffer');
+    }
+    return native.xchacha20Poly1305Decrypt(key, nonce, ciphertext) as Buffer;
+  },
+
+  /**
+   * Encrypt + authenticate with Additional Authenticated Data.
+   *
+   * AAD is NOT encrypted but IS authenticated. Use for plaintext metadata
+   * (e.g., message headers) that must not be tampered with.
+   */
+  encryptWithAad(key: Buffer, nonce: Buffer, plaintext: Buffer, aad: Buffer): Buffer {
+    if (!Buffer.isBuffer(key) || key.length !== CHACHA20_POLY1305_KEY_SIZE) {
+      throw new RangeError(`key must be ${CHACHA20_POLY1305_KEY_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(nonce) || nonce.length !== XCHACHA20_POLY1305_NONCE_SIZE) {
+      throw new RangeError(`nonce must be ${XCHACHA20_POLY1305_NONCE_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(plaintext) || !Buffer.isBuffer(aad)) {
+      throw new TypeError('plaintext and aad must be Buffers');
+    }
+    return native.xchacha20Poly1305EncryptWithAad(key, nonce, plaintext, aad) as Buffer;
+  },
+
+  /**
+   * Verify (key + nonce + ciphertext + AAD) and decrypt.
+   */
+  decryptWithAad(key: Buffer, nonce: Buffer, ciphertext: Buffer, aad: Buffer): Buffer {
+    if (!Buffer.isBuffer(key) || key.length !== CHACHA20_POLY1305_KEY_SIZE) {
+      throw new RangeError(`key must be ${CHACHA20_POLY1305_KEY_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(nonce) || nonce.length !== XCHACHA20_POLY1305_NONCE_SIZE) {
+      throw new RangeError(`nonce must be ${XCHACHA20_POLY1305_NONCE_SIZE} bytes`);
+    }
+    if (!Buffer.isBuffer(ciphertext) || !Buffer.isBuffer(aad)) {
+      throw new TypeError('ciphertext and aad must be Buffers');
+    }
+    return native.xchacha20Poly1305DecryptWithAad(key, nonce, ciphertext, aad) as Buffer;
+  },
+
+  /** Key size in bytes (32). */
+  KEY_SIZE: CHACHA20_POLY1305_KEY_SIZE,
+  /** Extended nonce size in bytes (24). */
+  NONCE_SIZE: XCHACHA20_POLY1305_NONCE_SIZE,
   /** Authentication tag size in bytes (16), appended to ciphertext. */
   TAG_SIZE: CHACHA20_POLY1305_TAG_SIZE,
 });

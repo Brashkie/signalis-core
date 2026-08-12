@@ -59,11 +59,14 @@ export {
   SHA256,
   // NEW in v0.3.0
   ChaCha20Poly1305,
+  // NEW in v0.4.3
+  XChaCha20Poly1305,
   constantTimeEq,
   nativeSecureRandom,
   CHACHA20_POLY1305_KEY_SIZE,
   CHACHA20_POLY1305_NONCE_SIZE,
   CHACHA20_POLY1305_TAG_SIZE,
+  XCHACHA20_POLY1305_NONCE_SIZE,
   // NEW in v0.4.0
   Base64,
   Hex,
@@ -200,7 +203,7 @@ export {
  *
  * Bumped on every release.
  */
-export const VERSION = '0.4.2' as const;
+export const VERSION = '0.4.3' as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Default export — Convenience namespace
@@ -216,6 +219,7 @@ import {
   HMAC,
   SHA256,
   ChaCha20Poly1305,
+  XChaCha20Poly1305,
   Base64,
   Hex,
   Utf8,
@@ -256,6 +260,7 @@ const SignalisCore = Object.freeze({
   AES_GCM,
   AES_CBC,
   ChaCha20Poly1305,
+  XChaCha20Poly1305,
   HMAC,
   SHA256,
   // Random

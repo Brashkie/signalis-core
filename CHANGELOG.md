@@ -5,6 +5,31 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] — 2026-08-12
+
+### ✨ Added — XChaCha20-Poly1305 (extended-nonce AEAD)
+
+The extended-nonce (24-byte) variant of ChaCha20-Poly1305, exposed as a new
+`XChaCha20Poly1305` namespace with the same shape as `ChaCha20Poly1305`
+(`encrypt` / `decrypt` / `encryptWithAad` / `decryptWithAad` + `KEY_SIZE` /
+`NONCE_SIZE` / `TAG_SIZE`).
+
+- **Why it matters:** the 192-bit nonce makes it safe to pick nonces at random
+  per message — no counter or uniqueness tracking needed. Prefer it over
+  `ChaCha20Poly1305` when you can't guarantee unique 12-byte nonces.
+- Built on the same audited `chacha20poly1305` crate (no new dependency; the
+  `xchacha20poly1305` feature is on by default).
+- **Verified against a libsodium known-answer vector** (both the Rust unit tests
+  and the TypeScript tests check the exact ciphertext against
+  `crypto_aead_xchacha20poly1305_ietf`), proving interoperability with the
+  reference implementation.
+- Fully backwards compatible; no existing API changes.
+
+### 📝 Notes
+
+- Completes 3/9 of Phase 4 (modern primitives). Phase 1 remains complete; no
+  changes to existing primitives.
+
 ## [0.4.2] — 2026-08-10
 
 ### ✨ Added — Criterion benchmark suite (starts Phase 5)

@@ -82,7 +82,7 @@ Expand the available primitive set.
 
 - [x] ChaCha20 *(part of ChaCha20-Poly1305, v0.3.0)*
 - [x] ChaCha20-Poly1305 *(v0.3.0)*
-- [ ] XChaCha20-Poly1305
+- [x] XChaCha20-Poly1305 *(v0.4.3 — 24-byte extended nonce; verified vs libsodium KAT)*
 - [ ] Argon2id
 - [ ] PBKDF2
 - [ ] SHA-3
@@ -90,7 +90,7 @@ Expand the available primitive set.
 - [ ] HKDF-SHA512
 - [ ] HMAC-SHA512
 
-**Progress: 2 / 9 (22%)**
+**Progress: 3 / 9 (33%)**
 
 ---
 
@@ -246,7 +246,7 @@ Long-term enhancements.
 | 1. Cryptographic foundation | ✅ 100% (13/13) |
 | 2. Multi-platform support | 🟡 71% (10/14) |
 | 3. Cryptographic utilities | ✅ 100% (11/11) |
-| 4. Modern cryptographic primitives | 🟡 22% (2/9) |
+| 4. Modern cryptographic primitives | 🟡 33% (3/9) |
 | 5. Performance | 🟡 10% (1/10) |
 | 6. Security hardening | 🟡 9% (1/11) |
 | 7. Modular architecture | 🟡 75% (6/8) |
@@ -256,7 +256,7 @@ Long-term enhancements.
 | 11. Advanced cryptography | 🔴 0% (0/10) |
 | 12. Future improvements | 🔴 0% (0/8) |
 
-**Total: 50 / 120 (42%)**
+**Total: 51 / 120 (43%)**
 
 ---
 

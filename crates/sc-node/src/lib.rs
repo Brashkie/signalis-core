@@ -377,6 +377,54 @@ pub fn chacha20_poly1305_decrypt_with_aad(
     Ok(Buffer::from(pt))
 }
 
+// ─── XChaCha20-Poly1305 (24-byte nonce, NEW in v0.4.3) ──────────────────────
+
+#[napi]
+pub fn xchacha20_poly1305_encrypt(
+    key: Buffer,
+    nonce: Buffer,
+    plaintext: Buffer,
+) -> Result<Buffer> {
+    let ct = sc_chacha20poly1305::xchacha_encrypt(&key, &nonce, &plaintext)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(ct))
+}
+
+#[napi]
+pub fn xchacha20_poly1305_decrypt(
+    key: Buffer,
+    nonce: Buffer,
+    ciphertext: Buffer,
+) -> Result<Buffer> {
+    let pt = sc_chacha20poly1305::xchacha_decrypt(&key, &nonce, &ciphertext)
+        .map_err(|e| Error::new(Status::GenericFailure, e.to_string()))?;
+    Ok(Buffer::from(pt))
+}
+
+#[napi]
+pub fn xchacha20_poly1305_encrypt_with_aad(
+    key: Buffer,
+    nonce: Buffer,
+    plaintext: Buffer,
+    aad: Buffer,
+) -> Result<Buffer> {
+    let ct = sc_chacha20poly1305::xchacha_encrypt_with_aad(&key, &nonce, &plaintext, &aad)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(ct))
+}
+
+#[napi]
+pub fn xchacha20_poly1305_decrypt_with_aad(
+    key: Buffer,
+    nonce: Buffer,
+    ciphertext: Buffer,
+    aad: Buffer,
+) -> Result<Buffer> {
+    let pt = sc_chacha20poly1305::xchacha_decrypt_with_aad(&key, &nonce, &ciphertext, &aad)
+        .map_err(|e| Error::new(Status::GenericFailure, e.to_string()))?;
+    Ok(Buffer::from(pt))
+}
+
 // ─── Utility helpers (NEW in v0.3.0) ────────────────────────────────────────
 
 /// Generate `size` cryptographically secure random bytes.

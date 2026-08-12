@@ -32,15 +32,18 @@
 
 use chacha20poly1305::{
     aead::{Aead, KeyInit, Payload},
-    ChaCha20Poly1305 as ChaChaInner, Key, Nonce,
+    ChaCha20Poly1305 as ChaChaInner, Key, Nonce, XChaCha20Poly1305 as XChaChaInner, XNonce,
 };
 use thiserror::Error;
 
-/// ChaCha20-Poly1305 key size (bytes).
+/// ChaCha20-Poly1305 key size (bytes). Shared by the XChaCha20 variant.
 pub const KEY_SIZE: usize = 32;
 
 /// ChaCha20-Poly1305 nonce size (bytes).
 pub const NONCE_SIZE: usize = 12;
+
+/// XChaCha20-Poly1305 extended nonce size (bytes).
+pub const XNONCE_SIZE: usize = 24;
 
 /// Poly1305 authentication tag size appended to every ciphertext.
 pub const TAG_SIZE: usize = 16;
@@ -160,6 +163,106 @@ impl Drop for ChaCha20Poly1305Cipher {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// XChaCha20Poly1305Cipher
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// XChaCha20-Poly1305 AEAD: the extended-nonce variant of ChaCha20-Poly1305.
+///
+/// Identical security and interface to [`ChaCha20Poly1305Cipher`], but with a
+/// **24-byte nonce** instead of 12. The larger nonce makes it safe to generate
+/// nonces randomly: with 192 bits of nonce, the probability of a collision is
+/// negligible even across a very large number of messages, so you don't need a
+/// counter or other uniqueness-tracking scheme. Prefer this when you can't
+/// guarantee unique 12-byte nonces.
+///
+/// The construction has rough-consensus/running-code status (libsodium,
+/// WireGuard) and is documented in the (expired) IETF draft
+/// `draft-arciszewski-xchacha-03`. Key size is the same 32 bytes.
+pub struct XChaCha20Poly1305Cipher {
+    inner: XChaChaInner,
+}
+
+impl XChaCha20Poly1305Cipher {
+    /// Construct a cipher from a 32-byte key.
+    pub fn new(key: &[u8]) -> Result<Self> {
+        if key.len() != KEY_SIZE {
+            return Err(Error::InvalidKeyLength {
+                expected: KEY_SIZE,
+                actual: key.len(),
+            });
+        }
+        let key = Key::from_slice(key);
+        Ok(Self {
+            inner: XChaChaInner::new(key),
+        })
+    }
+
+    /// Encrypt `plaintext` under a 24-byte `nonce`, authenticating `aad`.
+    ///
+    /// Returns `ciphertext || tag` (tag appended, 16 bytes).
+    ///
+    /// With the 24-byte nonce, generating `nonce` from a secure RNG per message
+    /// is safe (collision probability is negligible).
+    pub fn encrypt(&self, nonce: &[u8], plaintext: &[u8], aad: &[u8]) -> Result<Vec<u8>> {
+        if nonce.len() != XNONCE_SIZE {
+            return Err(Error::InvalidNonceLength {
+                expected: XNONCE_SIZE,
+                actual: nonce.len(),
+            });
+        }
+        let nonce = XNonce::from_slice(nonce);
+        self.inner
+            .encrypt(
+                nonce,
+                Payload {
+                    msg: plaintext,
+                    aad,
+                },
+            )
+            .map_err(|_| Error::EncryptionFailed)
+    }
+
+    /// Decrypt `ciphertext_with_tag` under a 24-byte `nonce`, verifying `aad`.
+    ///
+    /// On any failure returns [`Error::DecryptionFailed`] without revealing
+    /// which check failed (constant-time).
+    pub fn decrypt(&self, nonce: &[u8], ciphertext_with_tag: &[u8], aad: &[u8]) -> Result<Vec<u8>> {
+        if nonce.len() != XNONCE_SIZE {
+            return Err(Error::InvalidNonceLength {
+                expected: XNONCE_SIZE,
+                actual: nonce.len(),
+            });
+        }
+        let nonce = XNonce::from_slice(nonce);
+        self.inner
+            .decrypt(
+                nonce,
+                Payload {
+                    msg: ciphertext_with_tag,
+                    aad,
+                },
+            )
+            .map_err(|_| Error::DecryptionFailed)
+    }
+}
+
+impl core::fmt::Debug for XChaCha20Poly1305Cipher {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        // NEVER print the key — even partially. Just identify the type.
+        f.debug_struct("XChaCha20Poly1305Cipher")
+            .field("key", &"<redacted>")
+            .finish()
+    }
+}
+
+impl Drop for XChaCha20Poly1305Cipher {
+    fn drop(&mut self) {
+        // The underlying XChaCha20Poly1305 struct from RustCrypto zeroizes its
+        // internal key on drop.
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // One-shot helpers (stateless API for simple cases)
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -186,6 +289,41 @@ pub fn decrypt_with_aad(
     aad: &[u8],
 ) -> Result<Vec<u8>> {
     ChaCha20Poly1305Cipher::new(key)?.decrypt(nonce, ciphertext, aad)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// One-shot helpers — XChaCha20-Poly1305 (24-byte nonce)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// One-shot XChaCha20 encrypt without AAD. Convenience wrapper around
+/// [`XChaCha20Poly1305Cipher`].
+pub fn xchacha_encrypt(key: &[u8], nonce: &[u8], plaintext: &[u8]) -> Result<Vec<u8>> {
+    XChaCha20Poly1305Cipher::new(key)?.encrypt(nonce, plaintext, b"")
+}
+
+/// One-shot XChaCha20 decrypt without AAD.
+pub fn xchacha_decrypt(key: &[u8], nonce: &[u8], ciphertext: &[u8]) -> Result<Vec<u8>> {
+    XChaCha20Poly1305Cipher::new(key)?.decrypt(nonce, ciphertext, b"")
+}
+
+/// One-shot XChaCha20 encrypt with AAD.
+pub fn xchacha_encrypt_with_aad(
+    key: &[u8],
+    nonce: &[u8],
+    plaintext: &[u8],
+    aad: &[u8],
+) -> Result<Vec<u8>> {
+    XChaCha20Poly1305Cipher::new(key)?.encrypt(nonce, plaintext, aad)
+}
+
+/// One-shot XChaCha20 decrypt with AAD.
+pub fn xchacha_decrypt_with_aad(
+    key: &[u8],
+    nonce: &[u8],
+    ciphertext: &[u8],
+    aad: &[u8],
+) -> Result<Vec<u8>> {
+    XChaCha20Poly1305Cipher::new(key)?.decrypt(nonce, ciphertext, aad)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -405,6 +543,96 @@ mod tests {
         // Make sure no hex of the key leaked
         let key_hex = hex::encode(key);
         assert!(!dbg.contains(&key_hex));
+    }
+
+    // ─── XChaCha20-Poly1305 ──────────────────────────────────────────────────
+
+    fn fresh_xnonce() -> [u8; XNONCE_SIZE] {
+        // 40 41 42 ... 57 (24 bytes)
+        let mut n = [0u8; XNONCE_SIZE];
+        for (i, b) in n.iter_mut().enumerate() {
+            *b = 0x40 + i as u8;
+        }
+        n
+    }
+
+    #[test]
+    fn xchacha_round_trip_no_aad() {
+        let key = fresh_key();
+        let nonce = fresh_xnonce();
+        let plaintext = b"Hello, XChaCha!";
+
+        let cipher = XChaCha20Poly1305Cipher::new(&key).unwrap();
+        let ct = cipher.encrypt(&nonce, plaintext, b"").unwrap();
+        assert_eq!(ct.len(), plaintext.len() + TAG_SIZE);
+
+        let pt = cipher.decrypt(&nonce, &ct, b"").unwrap();
+        assert_eq!(pt, plaintext);
+    }
+
+    #[test]
+    fn xchacha_round_trip_with_aad() {
+        let key = fresh_key();
+        let nonce = fresh_xnonce();
+        let cipher = XChaCha20Poly1305Cipher::new(&key).unwrap();
+        let ct = cipher.encrypt(&nonce, b"secret", b"aad-data").unwrap();
+        let pt = cipher.decrypt(&nonce, &ct, b"aad-data").unwrap();
+        assert_eq!(pt, b"secret");
+        // wrong AAD must fail
+        assert!(cipher.decrypt(&nonce, &ct, b"wrong-aad").is_err());
+    }
+
+    #[test]
+    fn xchacha_rejects_12_byte_nonce() {
+        // Proves this is really the extended-nonce variant.
+        let key = fresh_key();
+        let cipher = XChaCha20Poly1305Cipher::new(&key).unwrap();
+        let short_nonce = [0u8; 12];
+        assert!(cipher.encrypt(&short_nonce, b"x", b"").is_err());
+    }
+
+    #[test]
+    fn xchacha_rejects_tampered_ciphertext() {
+        let key = fresh_key();
+        let nonce = fresh_xnonce();
+        let cipher = XChaCha20Poly1305Cipher::new(&key).unwrap();
+        let mut ct = cipher.encrypt(&nonce, b"data", b"").unwrap();
+        ct[0] ^= 0x01;
+        assert!(cipher.decrypt(&nonce, &ct, b"").is_err());
+    }
+
+    #[test]
+    fn xchacha_known_answer_vs_libsodium() {
+        // KAT generated with libsodium (PyNaCl crypto_aead_xchacha20poly1305_ietf).
+        // Proves interoperability with the reference XChaCha20-Poly1305 (IETF).
+        let key = fresh_key(); // == bytes (i*37 mod 256)
+        let nonce = fresh_xnonce(); // 40..57
+        let plaintext = b"Signalis XChaCha KAT";
+
+        let cipher = XChaCha20Poly1305Cipher::new(&key).unwrap();
+
+        // With AAD "header-v1"
+        let ct = cipher.encrypt(&nonce, plaintext, b"header-v1").unwrap();
+        let expected = hex_literal::hex!(
+            "20df03f87c3b34d02b52cf608be5cabd670faa5acc8b9aa8bc1e53cae2b273d0a3d28e02"
+        );
+        assert_eq!(ct, expected, "XChaCha ciphertext must match libsodium");
+
+        // Without AAD
+        let ct2 = cipher.encrypt(&nonce, plaintext, b"").unwrap();
+        let expected2 = hex_literal::hex!(
+            "20df03f87c3b34d02b52cf608be5cabd670faa5a19defa41298eceeaa9398789d9888d17"
+        );
+        assert_eq!(ct2, expected2);
+    }
+
+    #[test]
+    fn xchacha_debug_does_not_leak_key() {
+        let key = fresh_key();
+        let cipher = XChaCha20Poly1305Cipher::new(&key).unwrap();
+        let dbg = format!("{:?}", cipher);
+        assert!(dbg.contains("<redacted>"));
+        assert!(!dbg.contains(&hex::encode(key)));
     }
 }
 
