@@ -5,6 +5,7 @@ members = [
     "crates/sc-ed25519",
     "crates/sc-xed25519",
     "crates/sc-hkdf",
+    "crates/sc-pbkdf2",
     "crates/sc-aes",
     "crates/sc-hmac",
     "crates/sc-sha256",
@@ -16,7 +17,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.4.3"
+version = "0.4.4"
 edition = "2021"
 rust-version = "1.80"
 authors = ["Brashkie (Hepein)"]
@@ -33,6 +34,7 @@ ed25519-dalek = { version = "2.1", default-features = false, features = ["zeroiz
 hkdf = "0.12"
 hmac = "0.12"
 sha2 = "0.10"
+pbkdf2 = { version = "0.12", default-features = false, features = ["hmac"] }
 aes-gcm = "0.10"
 aes = "0.8"
 cbc = { version = "0.1", features = ["std"] }
@@ -60,6 +62,7 @@ sc-curve25519 = { version = "0.4.0", path = "crates/sc-curve25519" }
 sc-ed25519 = { version = "0.4.0", path = "crates/sc-ed25519" }
 sc-xed25519 = { version = "0.4.0", path = "crates/sc-xed25519" }
 sc-hkdf = { version = "0.4.0", path = "crates/sc-hkdf" }
+sc-pbkdf2 = { version = "0.4.0", path = "crates/sc-pbkdf2" }
 sc-aes = { version = "0.4.0", path = "crates/sc-aes" }
 sc-hmac = { version = "0.4.0", path = "crates/sc-hmac" }
 sc-sha256 = { version = "0.4.0", path = "crates/sc-sha256" }

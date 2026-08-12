@@ -53,6 +53,7 @@ export {
   Ed25519,
   XEd25519,
   HKDF,
+  PBKDF2,
   AES_GCM,
   AES_CBC,
   HMAC,
@@ -203,7 +204,7 @@ export {
  *
  * Bumped on every release.
  */
-export const VERSION = '0.4.3' as const;
+export const VERSION = '0.4.4' as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Default export — Convenience namespace
@@ -214,6 +215,7 @@ import {
   Ed25519,
   XEd25519,
   HKDF,
+  PBKDF2,
   AES_GCM,
   AES_CBC,
   HMAC,
@@ -257,6 +259,7 @@ const SignalisCore = Object.freeze({
   Ed25519,
   XEd25519,
   HKDF,
+  PBKDF2,
   AES_GCM,
   AES_CBC,
   ChaCha20Poly1305,

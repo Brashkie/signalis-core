@@ -5,6 +5,31 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] — 2026-08-12
+
+### ✨ Added — PBKDF2-HMAC-SHA256 (password-based KDF)
+
+A new `PBKDF2` namespace for deriving keys from **passwords** (RFC 8018). Where
+`HKDF` expands a high-entropy secret, PBKDF2 is built for low-entropy passwords:
+it applies HMAC-SHA256 a configurable number of iterations to make brute-forcing
+expensive.
+
+- `PBKDF2.derive(password, salt, iterations, length)` → derived key `Buffer`.
+- New `sc-pbkdf2` crate over the audited RustCrypto `pbkdf2` crate (no crypto
+  written by hand). Kept as its own crate so the core stays modular.
+- Validation: non-empty salt, `iterations >= 1`, `length >= 1` (enforced in Rust;
+  the JS layer additionally rejects non-numbers/negatives early).
+- **Verified against known-answer tests** (the SHA-256 analogues of the RFC 6070
+  vectors) in both the Rust unit tests and the TypeScript tests, cross-checked
+  against Node's `crypto.pbkdf2` / OpenSSL.
+
+### 📝 Notes — iOS / Apple binding (roadmap only)
+
+Clarified Phase 2: **iOS is not an N-API `.node` target.** The Rust core already
+compiles for Apple platforms; what's needed is a separate Apple binding
+(`sc-apple` → XCFramework via UniFFI or FFI+cbindgen), documented as a future
+design note rather than an N-API platform. No code change — planning only.
+
 ## [0.4.3] — 2026-08-12
 
 ### ✨ Added — XChaCha20-Poly1305 (extended-nonce AEAD)

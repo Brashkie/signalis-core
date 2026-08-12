@@ -47,12 +47,42 @@ Native builds across major platforms.
 - [x] Android ARM64
 - [x] Android ARMv7
 - [x] Android x86_64 *(new in v0.4.0)*
-- [ ] iOS ARM64
+- [ ] iOS — **not an N-API `.node` target.** iOS can't load arbitrary native
+  addons the way Node does, so iOS is not "add `aarch64-apple-ios` to the build
+  matrix". The Rust core already compiles for Apple targets; what's missing is an
+  Apple-appropriate *binding* (a separate `sc-apple` crate → XCFramework),
+  tracked as "Apple binding" below rather than as an N-API platform.
 - [ ] WASM
 - [ ] FreeBSD
 - [ ] RISC-V
 
 **Progress: 10 / 14 (71%)**
+
+### 🍎 Apple binding — future (design note, not scheduled)
+
+When `signalis-core` needs native iOS/macOS integration, the answer is a new
+binding crate over the *same* crypto core — **not** an N-API `.node`. The core
+crates (`sc-curve25519`, `sc-ed25519`, `sc-hkdf`, …) stay Node-agnostic; only a
+sibling binding is added, exactly as `sc-node` is today:
+
+```
+crates/
+├── [core crypto crates]        ← untouched, platform-agnostic
+├── sc-node    → N-API   → Node.js
+└── sc-apple   → (future) → Swift / iOS / macOS   [XCFramework, not .node]
+```
+
+Two options, to be decided **when we get there** (the choice depends on how
+complex the public API is at that point — buffers, sessions, custom error/types):
+
+- **Option 1 — UniFFI** (Mozilla): auto-generates Swift bindings from Rust. Less
+  hand-written FFI; good for a high-level API; keeps Rust/Swift APIs in sync.
+- **Option 2 — manual FFI + `cbindgen`**: Rust exposes a stable C ABI, `cbindgen`
+  generates headers, Swift/Obj-C consumes it. More work, maximum control over
+  ABI, memory, ownership, and layout.
+
+Not started deliberately: stabilize the crypto core first; pick the binding
+approach against the real API shape at that time, not now.
 
 ---
 
@@ -83,14 +113,14 @@ Expand the available primitive set.
 - [x] ChaCha20 *(part of ChaCha20-Poly1305, v0.3.0)*
 - [x] ChaCha20-Poly1305 *(v0.3.0)*
 - [x] XChaCha20-Poly1305 *(v0.4.3 — 24-byte extended nonce; verified vs libsodium KAT)*
+- [x] PBKDF2 *(v0.4.4 — PBKDF2-HMAC-SHA256, RFC 8018; verified vs RFC 6070-style KATs)*
 - [ ] Argon2id
-- [ ] PBKDF2
 - [ ] SHA-3
 - [ ] BLAKE3
 - [ ] HKDF-SHA512
 - [ ] HMAC-SHA512
 
-**Progress: 3 / 9 (33%)**
+**Progress: 4 / 9 (44%)**
 
 ---
 
@@ -246,7 +276,7 @@ Long-term enhancements.
 | 1. Cryptographic foundation | ✅ 100% (13/13) |
 | 2. Multi-platform support | 🟡 71% (10/14) |
 | 3. Cryptographic utilities | ✅ 100% (11/11) |
-| 4. Modern cryptographic primitives | 🟡 33% (3/9) |
+| 4. Modern cryptographic primitives | 🟡 44% (4/9) |
 | 5. Performance | 🟡 10% (1/10) |
 | 6. Security hardening | 🟡 9% (1/11) |
 | 7. Modular architecture | 🟡 75% (6/8) |
@@ -256,7 +286,7 @@ Long-term enhancements.
 | 11. Advanced cryptography | 🔴 0% (0/10) |
 | 12. Future improvements | 🔴 0% (0/8) |
 
-**Total: 51 / 120 (43%)**
+**Total: 52 / 120 (43%)**
 
 ---
 

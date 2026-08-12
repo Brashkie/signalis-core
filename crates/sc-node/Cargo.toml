@@ -20,6 +20,7 @@ sc-curve25519 = { workspace = true }
 sc-ed25519 = { workspace = true }
 sc-xed25519 = { workspace = true }
 sc-hkdf = { workspace = true }
+sc-pbkdf2 = { workspace = true }
 sc-aes = { workspace = true }
 sc-hmac = { workspace = true }
 sc-sha256 = { workspace = true }

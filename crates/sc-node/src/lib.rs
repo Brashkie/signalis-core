@@ -160,6 +160,21 @@ pub fn hkdf_derive(salt: Buffer, ikm: Buffer, info: Buffer, length: u32) -> Resu
     Ok(Buffer::from(okm))
 }
 
+// ─── PBKDF2-HMAC-SHA256 (NEW in v0.4.4) ─────────────────────────────────────
+
+/// Derive a key from a password with PBKDF2-HMAC-SHA256.
+#[napi]
+pub fn pbkdf2_derive(
+    password: Buffer,
+    salt: Buffer,
+    iterations: u32,
+    length: u32,
+) -> Result<Buffer> {
+    let key = sc_pbkdf2::Pbkdf2::derive(&password, &salt, iterations, length as usize)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(key))
+}
+
 // ─── AES-256-GCM ────────────────────────────────────────────────────────────
 
 #[napi]

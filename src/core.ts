@@ -40,6 +40,7 @@ import {
   assertBufferOfSize,
   assertBuffer,
   assertHkdfLength,
+  assertPositiveInteger,
 } from './validators';
 
 import type {
@@ -277,6 +278,43 @@ export const HKDF = Object.freeze({
    * The size of an HKDF PRK in bytes (32).
    */
   PRK_SIZE: HKDF_PRK_SIZE,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PBKDF2-HMAC-SHA256 (password-based KDF, NEW in v0.4.4)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * PBKDF2-HMAC-SHA256 (RFC 8018) — derive a key from a password.
+ *
+ * Unlike {@link HKDF} (which expands a high-entropy secret), PBKDF2 is built for
+ * *low-entropy* passwords: it applies HMAC-SHA256 `iterations` times to make
+ * brute-forcing expensive. Use it to turn a user password into an encryption
+ * key, or to store password verifiers.
+ *
+ * @example
+ * import { PBKDF2, secureRandom } from '@brashkie/signalis-core';
+ *
+ * const salt = secureRandom(16);                 // unique, random, per password
+ * const key = PBKDF2.derive(Buffer.from(password), salt, 600_000, 32);
+ */
+export const PBKDF2 = Object.freeze({
+  /**
+   * Derive a `length`-byte key from `password` + `salt`.
+   *
+   * @param password - the password bytes
+   * @param salt - a unique, random salt (≥16 bytes recommended); must be non-empty
+   * @param iterations - work factor (≥1; use hundreds of thousands in production)
+   * @param length - desired key length in bytes (≥1)
+   * @throws {ValidationError} If inputs are not Buffers or numbers are not positive.
+   */
+  derive(password: Buffer, salt: Buffer, iterations: number, length: number): Buffer {
+    assertBuffer(password, 'password');
+    assertBuffer(salt, 'salt');
+    assertPositiveInteger(iterations, 'iterations');
+    assertPositiveInteger(length, 'length');
+    return native.pbkdf2Derive(password, salt, iterations, length) as Buffer;
+  },
 });
 
 // ═══════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,17 @@
+[package]
+name = "sc-pbkdf2"
+description = "PBKDF2-HMAC-SHA256 for Signalis Core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+pbkdf2 = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+hex-literal = { workspace = true }
