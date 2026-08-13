@@ -5,6 +5,32 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.5] — 2026-08-13
+
+### 🔒 Added — Wycheproof adversarial test vectors (hardening)
+
+Integrated Google's [Wycheproof](https://github.com/C2SP/wycheproof) test
+vectors for the AEAD primitives. Unlike round-trip tests, Wycheproof
+deliberately includes malformed and edge-case inputs — flipped authentication
+tag bits, Poly1305 edge cases, boundary ciphertexts — that catch subtle bugs
+plain tests miss.
+
+- **AES-256-GCM**: 66 vectors (39 valid + 27 tampered-tag) filtered to this
+  library's parameters (256-bit key, 96-bit nonce, 128-bit tag).
+- **ChaCha20-Poly1305**: 316 vectors (256 valid + 60 adversarial, including
+  Poly1305/ciphertext/tag edge cases).
+- Every vector is checked both ways: `valid` → encryption reproduces `ct‖tag`
+  and decryption round-trips; `invalid` → decryption must reject (auth failure).
+
+No code or API changes — this release is purely additional test coverage. The
+committed vector fixtures live under `__tests__/vectors/` and are **not** shipped
+in the npm package. Wycheproof is Apache-2.0 licensed (same as this project).
+
+### 📝 Notes
+
+- Advances Phase 6 (security hardening) to 2/11. Next hardening steps: fuzzing
+  (`cargo-fuzz`) and `cargo-deny`.
+
 ## [0.4.4] — 2026-08-12
 
 ### ✨ Added — PBKDF2-HMAC-SHA256 (password-based KDF)

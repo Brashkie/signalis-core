@@ -154,12 +154,12 @@ Production-grade security.
 - [ ] AddressSanitizer
 - [ ] UndefinedBehaviorSanitizer
 - [ ] LeakSanitizer
-- [ ] Google Wycheproof vectors
+- [x] Google Wycheproof vectors *(v0.4.5 — AES-256-GCM + ChaCha20-Poly1305; 382 adversarial vectors incl. tampered tags / Poly1305 edge cases)*
 - [ ] Fuzz testing
 - [ ] Side-channel review
 - [ ] Secure default configuration
 
-**Progress: 1 / 11 (9%)**
+**Progress: 2 / 11 (18%)**
 
 ---
 
@@ -278,7 +278,7 @@ Long-term enhancements.
 | 3. Cryptographic utilities | ✅ 100% (11/11) |
 | 4. Modern cryptographic primitives | 🟡 44% (4/9) |
 | 5. Performance | 🟡 10% (1/10) |
-| 6. Security hardening | 🟡 9% (1/11) |
+| 6. Security hardening | 🟡 18% (2/11) |
 | 7. Modular architecture | 🟡 75% (6/8) |
 | 8. Developer experience | 🟡 50% (4/8) |
 | 9. Testing & Quality | 🟡 22% (2/9) |
@@ -286,7 +286,7 @@ Long-term enhancements.
 | 11. Advanced cryptography | 🔴 0% (0/10) |
 | 12. Future improvements | 🔴 0% (0/8) |
 
-**Total: 52 / 120 (43%)**
+**Total: 53 / 120 (44%)**
 
 ---
 

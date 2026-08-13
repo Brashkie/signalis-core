@@ -204,7 +204,7 @@ export {
  *
  * Bumped on every release.
  */
-export const VERSION = '0.4.4' as const;
+export const VERSION = '0.4.5' as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Default export — Convenience namespace

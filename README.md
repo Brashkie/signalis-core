@@ -32,6 +32,20 @@ Built with **Rust** for safety and speed, exposed to Node.js via [napi-rs](https
 
 ---
 
+## 🎉 What's New in v0.4.1 → v0.4.5
+
+**Recent releases add two modern primitives and harden the AEAD suite — all fully backwards compatible.**
+
+| New | Description |
+|-----|-------------|
+| 🆕 **`XChaCha20Poly1305`** (v0.4.3) | Extended-nonce (24-byte) AEAD — safe to randomize nonces per message. Verified vs libsodium KAT |
+| 🆕 **`PBKDF2`** (v0.4.4) | PBKDF2-HMAC-SHA256 password KDF (RFC 8018). Verified vs RFC 6070-style KATs |
+| 🔒 **Wycheproof vectors** (v0.4.5) | 382 adversarial AEAD test vectors (tampered tags, Poly1305 edge cases) for AES-GCM + ChaCha20-Poly1305 |
+| 🧰 **Utilities** (v0.4.1) | `split`, `concatBytes`, `splitBytes`, `bytesEqual` helpers |
+| 📊 **Criterion benchmarks** (v0.4.2) | Native benchmark suite for all primitives |
+
+See the [CHANGELOG](./CHANGELOG.md) for full details.
+
 ## 🎉 What's New in v0.4.0
 
 **v0.4.0 ships native encoding helpers (Base64, Hex, UTF-8) + Android x86_64 target — fully backwards compatible with v0.3.x.**
@@ -207,8 +221,10 @@ npm install @brashkie/signalis-core
     - [Ed25519](#ed25519)
     - [XEd25519](#xed25519)
     - [HKDF-SHA256](#hkdf-sha256)
+    - [PBKDF2-HMAC-SHA256](#pbkdf2-hmac-sha256-)
     - [AES-256-GCM](#aes-256-gcm)
     - [AES-256-CBC](#aes-256-cbc)
+    - [XChaCha20-Poly1305](#xchacha20-poly1305-)
     - [HMAC-SHA256](#hmac-sha256)
     - [SHA-256](#sha-256)
     - [Utilities](#utilities)
@@ -244,9 +260,11 @@ npm install @brashkie/signalis-core
 | 🛡️ **Audited Crypto** | Built on `curve25519-dalek`, `ed25519-dalek`, RustCrypto suite — battle-tested libraries |
 | ✍️ **Digital Signatures** | Ed25519 (RFC 8032) and XEd25519 (Signal-style) — **NEW v0.2.0** |
 | 🔐 **AEAD with AAD** | AES-256-GCM with Additional Authenticated Data — **NEW v0.2.0** |
+| 🔑 **Extended-nonce AEAD** | XChaCha20-Poly1305 (24-byte nonce) — **NEW v0.4.3** |
+| 🔓 **Password KDF** | PBKDF2-HMAC-SHA256 (RFC 8018) — **NEW v0.4.4** |
 | 📦 **Dual Package** | Works in CommonJS, ESM, and TypeScript projects |
 | 🎯 **Type-Safe** | Full TypeScript definitions with branded types and rich error classes |
-| ✅ **Test Vectors** | Validated against RFC 5869, RFC 7748, RFC 8032, RFC 4231, and NIST vectors |
+| ✅ **Test Vectors** | Validated against RFC 5869, RFC 7748, RFC 8032, RFC 4231, NIST, and **Google Wycheproof** adversarial vectors |
 | 🌍 **Cross-Platform** | Prebuilt binaries for Windows, macOS, Linux (x64, ARM) + **Android arm64/armv7/x86_64** |
 | 🔒 **Constant-Time** | Side-channel resistant comparisons via `subtle` crate |
 | 🧹 **Auto-Zeroization** | Secrets are wiped from memory automatically |
@@ -600,6 +618,53 @@ ChaCha20Poly1305.TAG_SIZE;     // 16 (appended to ciphertext)
 | Apple Silicon (M-series) | Either (close) | Both well-optimized |
 
 **Security:** ChaCha20-Poly1305 and AES-GCM have equivalent security properties. The choice is purely about performance on your target.
+
+### XChaCha20-Poly1305 🆕
+
+Extended-nonce (24-byte) variant of ChaCha20-Poly1305 — **NEW v0.4.3**. Same key and security; the larger nonce makes it safe to generate nonces randomly per message without tracking uniqueness.
+
+```typescript
+import { XChaCha20Poly1305, secureRandom } from '@brashkie/signalis-core';
+
+const key = secureRandom(32);     // XChaCha20Poly1305.KEY_SIZE
+const nonce = secureRandom(24);   // 24 bytes — safe to randomize per message
+
+const ct = XChaCha20Poly1305.encrypt(key, nonce, plaintext);
+const pt = XChaCha20Poly1305.decrypt(key, nonce, ct);
+
+// With Additional Authenticated Data
+const aad = Buffer.from('public header');
+const ct2 = XChaCha20Poly1305.encryptWithAad(key, nonce, plaintext, aad);
+const pt2 = XChaCha20Poly1305.decryptWithAad(key, nonce, ct2, aad);
+
+// Constants
+XChaCha20Poly1305.KEY_SIZE;    // 32
+XChaCha20Poly1305.NONCE_SIZE;  // 24
+XChaCha20Poly1305.TAG_SIZE;    // 16 (appended to ciphertext)
+```
+
+**When to prefer XChaCha20-Poly1305:** with a 12-byte nonce (ChaCha20-Poly1305 / AES-GCM) you must guarantee nonces never repeat under the same key — usually with a counter. The 24-byte nonce here has enough space that random per-message nonces are safe, which simplifies designs where coordinating a counter is hard. Verified against a libsodium known-answer vector for interoperability.
+
+### PBKDF2-HMAC-SHA256 🆕
+
+Password-based key derivation per RFC 8018 — **NEW v0.4.4**. Where HKDF expands a high-entropy secret, PBKDF2 is built for **low-entropy passwords**: it applies HMAC-SHA256 many times to make brute-forcing expensive.
+
+```typescript
+import { PBKDF2, secureRandom } from '@brashkie/signalis-core';
+
+const salt = secureRandom(16);    // unique, random, per password
+const iterations = 600_000;       // work factor (OWASP guidance for PBKDF2-SHA256)
+
+const key = PBKDF2.derive(Buffer.from(password), salt, iterations, 32);
+```
+
+- **salt**: must be non-empty; use a unique, random salt (≥16 bytes) per password.
+- **iterations**: the tunable work factor (≥1; use hundreds of thousands in production).
+- **length**: desired key length in bytes (≥1).
+
+Verified against RFC 6070-style known-answer tests (cross-checked with OpenSSL / Node's `crypto.pbkdf2`).
+
+**HKDF vs PBKDF2:** use HKDF to derive keys from an already-random secret (e.g. a Diffie-Hellman result); use PBKDF2 (or Argon2 in future) to derive a key from a human password.
 
 ### Base64 / Hex / UTF-8 🆕
 
