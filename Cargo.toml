@@ -6,6 +6,7 @@ members = [
     "crates/sc-xed25519",
     "crates/sc-hkdf",
     "crates/sc-pbkdf2",
+    "crates/sc-argon2",
     "crates/sc-aes",
     "crates/sc-hmac",
     "crates/sc-sha256",
@@ -17,7 +18,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.4.5"
+version = "0.4.6"
 edition = "2021"
 rust-version = "1.80"
 authors = ["Brashkie (Hepein)"]
@@ -35,6 +36,7 @@ hkdf = "0.12"
 hmac = "0.12"
 sha2 = "0.10"
 pbkdf2 = { version = "0.12", default-features = false, features = ["hmac"] }
+argon2 = { version = "0.5", default-features = false, features = ["alloc"] }
 aes-gcm = "0.10"
 aes = "0.8"
 cbc = { version = "0.1", features = ["std"] }
@@ -63,6 +65,7 @@ sc-ed25519 = { version = "0.4.0", path = "crates/sc-ed25519" }
 sc-xed25519 = { version = "0.4.0", path = "crates/sc-xed25519" }
 sc-hkdf = { version = "0.4.0", path = "crates/sc-hkdf" }
 sc-pbkdf2 = { version = "0.4.0", path = "crates/sc-pbkdf2" }
+sc-argon2 = { version = "0.4.0", path = "crates/sc-argon2" }
 sc-aes = { version = "0.4.0", path = "crates/sc-aes" }
 sc-hmac = { version = "0.4.0", path = "crates/sc-hmac" }
 sc-sha256 = { version = "0.4.0", path = "crates/sc-sha256" }

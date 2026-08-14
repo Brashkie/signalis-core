@@ -32,7 +32,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 
 ---
 
-## 🎉 Novedades en v0.4.1 → v0.4.5
+## 🎉 Novedades en v0.4.1 → v0.4.6
 
 **Los releases recientes agregan dos primitivas modernas y endurecen la suite AEAD — todo retrocompatible.**
 
@@ -40,6 +40,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 |-------|-------------|
 | 🆕 **`XChaCha20Poly1305`** (v0.4.3) | AEAD de nonce extendido (24 bytes) — seguro randomizar nonces por mensaje. Verificado vs KAT de libsodium |
 | 🆕 **`PBKDF2`** (v0.4.4) | KDF de contraseñas PBKDF2-HMAC-SHA256 (RFC 8018). Verificado vs KATs estilo RFC 6070 |
+| 🆕 **`Argon2id`** (v0.4.6) | KDF de contraseñas memory-hard (RFC 9106). Verificado vs KATs de referencia libargon2 |
 | 🔒 **Vectores Wycheproof** (v0.4.5) | 382 vectores adversariales AEAD (tags alterados, edge cases de Poly1305) para AES-GCM + ChaCha20-Poly1305 |
 | 🧰 **Utilidades** (v0.4.1) | Helpers `split`, `concatBytes`, `splitBytes`, `bytesEqual` |
 | 📊 **Benchmarks Criterion** (v0.4.2) | Suite de benchmarks nativos para todas las primitivas |
@@ -229,6 +230,7 @@ npm install @brashkie/signalis-core
 | 🔐 **AEAD con AAD** | AES-256-GCM con Datos Autenticados Adicionales — **NUEVO v0.2.0** |
 | 🔑 **AEAD de nonce extendido** | XChaCha20-Poly1305 (nonce de 24 bytes) — **NUEVO v0.4.3** |
 | 🔓 **KDF de contraseñas** | PBKDF2-HMAC-SHA256 (RFC 8018) — **NUEVO v0.4.4** |
+| 🧠 **KDF memory-hard** | Argon2id (RFC 9106) — **NUEVO v0.4.6** |
 | 📦 **Paquete Dual** | Funciona en proyectos CommonJS, ESM y TypeScript |
 | 🎯 **Tipado Estricto** | Definiciones TypeScript completas con tipos branded y clases de error |
 | ✅ **Vectores de Test** | Validado contra RFC 5869, RFC 7748, RFC 8032, RFC 4231, NIST y vectores adversariales de **Google Wycheproof** |
@@ -628,6 +630,27 @@ const key = PBKDF2.derive(Buffer.from(password), salt, iterations, 32);
 Verificado contra known-answer tests estilo RFC 6070 (cotejados con OpenSSL / `crypto.pbkdf2` de Node).
 
 **HKDF vs PBKDF2:** usá HKDF para derivar claves de un secreto ya aleatorio (ej. un resultado Diffie-Hellman); usá PBKDF2 (o Argon2 en el futuro) para derivar una clave de una contraseña humana.
+
+### Argon2id 🆕
+
+Hashing de contraseñas memory-hard según RFC 9106 — **NUEVO v0.4.6**. El KDF de contraseñas recomendado hoy. A diferencia de PBKDF2 (solo iteraciones), Argon2id obliga al atacante a gastar mucha RAM por intento, anulando el paralelismo de GPU/ASIC.
+
+```typescript
+import { Argon2id, secureRandom } from '@brashkie/signalis-core';
+
+const salt = secureRandom(16);
+// Punto de partida OWASP para logins interactivos: 19 MiB, 2 pasadas, 1 lane
+const key = Argon2id.derive(Buffer.from(password), salt, 19456, 2, 1, 32);
+```
+
+- **mCost**: costo de memoria en **KiB** (ej. `19456` = 19 MiB, `65536` = 64 MiB).
+- **tCost**: iteraciones / costo de tiempo (≥1).
+- **pCost**: paralelismo / lanes (≥1).
+- **length**: longitud de clave deseada en bytes.
+
+Algoritmo fijo a Argon2id, versión 0x13. Verificado contra la implementación de referencia de Argon2 (libargon2) en múltiples sets de parámetros.
+
+**PBKDF2 vs Argon2id:** preferí Argon2id para código nuevo si podés pagar la memoria; PBKDF2 queda para entornos restringidos/orientados a FIPS.
 
 ### Base64 / Hex / UTF-8 🆕
 

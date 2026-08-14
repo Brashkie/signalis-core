@@ -318,6 +318,55 @@ export const PBKDF2 = Object.freeze({
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
+// Argon2id (memory-hard password KDF, NEW in v0.4.6)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Argon2id (RFC 9106) — the current recommended password-hashing function.
+ *
+ * Unlike {@link PBKDF2} (iteration-only), Argon2id is **memory-hard**: it forces
+ * an attacker to spend large amounts of RAM per guess, which defeats the cheap
+ * massive parallelism of GPUs/ASICs. Prefer Argon2id over PBKDF2 for new
+ * password-to-key derivation when you can afford the memory.
+ *
+ * @example
+ * import { Argon2id, secureRandom } from '@brashkie/signalis-core';
+ *
+ * const salt = secureRandom(16);
+ * // OWASP starting point for interactive logins: 19 MiB, 2 passes, 1 lane
+ * const key = Argon2id.derive(Buffer.from(password), salt, 19456, 2, 1, 32);
+ */
+export const Argon2id = Object.freeze({
+  /**
+   * Derive a `length`-byte key from `password` + `salt` using Argon2id.
+   *
+   * @param password - the password bytes
+   * @param salt - a unique, random salt (≥8 bytes required, ≥16 recommended)
+   * @param mCost - memory cost in **KiB** (e.g. 19456 = 19 MiB)
+   * @param tCost - iterations / time cost (≥1)
+   * @param pCost - parallelism / lanes (≥1)
+   * @param length - desired key length in bytes (≥1)
+   * @throws {ValidationError} If inputs are not Buffers or numbers are not positive.
+   */
+  derive(
+    password: Buffer,
+    salt: Buffer,
+    mCost: number,
+    tCost: number,
+    pCost: number,
+    length: number,
+  ): Buffer {
+    assertBuffer(password, 'password');
+    assertBuffer(salt, 'salt');
+    assertPositiveInteger(mCost, 'mCost');
+    assertPositiveInteger(tCost, 'tCost');
+    assertPositiveInteger(pCost, 'pCost');
+    assertPositiveInteger(length, 'length');
+    return native.argon2IdDerive(password, salt, mCost, tCost, pCost, length) as Buffer;
+  },
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
 // AES-256-GCM (Authenticated Encryption)
 // ═══════════════════════════════════════════════════════════════════════════
 

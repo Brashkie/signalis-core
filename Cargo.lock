@@ -59,6 +59,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "940b3a0ca603d1eade50a4846a2afffd5ef57a9feac2c0e2ec2e14f9ead76000"
 
 [[package]]
+name = "argon2"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c3610892ee6e0cbce8ae2700349fcf8f98adb0dbfbee85aec3c9179d29cc072"
+dependencies = [
+ "base64ct",
+ "blake2",
+ "cpufeatures",
+ "password-hash",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -71,10 +83,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
+name = "base64ct"
+version = "1.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
+
+[[package]]
 name = "bitflags"
 version = "2.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4512299f36f043ab09a583e57bceb5a5aab7a73db1805848e8fef3c9e8c78b3"
+
+[[package]]
+name = "blake2"
+version = "0.10.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46502ad458c9a52b69d4d4d32775c788b7a1b85e8bc9d482d92250fc0e3f8efe"
+dependencies = [
+ "digest",
+]
 
 [[package]]
 name = "block-buffer"
@@ -652,6 +679,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 
 [[package]]
+name = "password-hash"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "346f04948ba92c43e8469c1ee6736c7563d71012b17d40745260fe106aac2166"
+dependencies = [
+ "base64ct",
+ "rand_core",
+ "subtle",
+]
+
+[[package]]
 name = "pbkdf2"
 version = "0.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -850,7 +888,7 @@ dependencies = [
 
 [[package]]
 name = "sc-aes"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -860,6 +898,15 @@ dependencies = [
  "subtle",
  "thiserror",
  "zeroize",
+]
+
+[[package]]
+name = "sc-argon2"
+version = "0.4.6"
+dependencies = [
+ "argon2",
+ "hex-literal",
+ "thiserror",
 ]
 
 [[package]]
@@ -876,7 +923,7 @@ dependencies = [
 
 [[package]]
 name = "sc-chacha20poly1305"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "chacha20poly1305",
  "hex-literal",
@@ -885,7 +932,7 @@ dependencies = [
 
 [[package]]
 name = "sc-curve25519"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "curve25519-dalek",
  "hex-literal",
@@ -898,7 +945,7 @@ dependencies = [
 
 [[package]]
 name = "sc-ed25519"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "ed25519-dalek",
  "hex-literal",
@@ -909,7 +956,7 @@ dependencies = [
 
 [[package]]
 name = "sc-encoding"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "base64",
  "hex",
@@ -918,7 +965,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hkdf"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "hex-literal",
  "hkdf",
@@ -929,7 +976,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hmac"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "hex-literal",
  "hmac",
@@ -940,13 +987,14 @@ dependencies = [
 
 [[package]]
 name = "sc-node"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
  "rand",
  "sc-aes",
+ "sc-argon2",
  "sc-chacha20poly1305",
  "sc-curve25519",
  "sc-ed25519",
@@ -961,7 +1009,7 @@ dependencies = [
 
 [[package]]
 name = "sc-pbkdf2"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "hex-literal",
  "pbkdf2",
@@ -971,7 +1019,7 @@ dependencies = [
 
 [[package]]
 name = "sc-sha256"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "hex-literal",
  "sha2",
@@ -979,7 +1027,7 @@ dependencies = [
 
 [[package]]
 name = "sc-utils"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "rand",
  "subtle",
@@ -989,7 +1037,7 @@ dependencies = [
 
 [[package]]
 name = "sc-xed25519"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "curve25519-dalek",
  "rand",

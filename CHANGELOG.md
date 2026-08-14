@@ -5,7 +5,30 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.5] — 2026-08-13
+## [0.4.6] — 2026-08-13
+
+### ✨ Added — Argon2id (memory-hard password KDF)
+
+A new `Argon2id` namespace implementing Argon2id (RFC 9106), the current
+recommended password-hashing function. Unlike `PBKDF2` (iteration-only),
+Argon2id is **memory-hard** — it forces an attacker to spend large amounts of
+RAM per guess, defeating the cheap massive parallelism of GPUs/ASICs.
+
+- `Argon2id.derive(password, salt, mCost, tCost, pCost, length)` → derived key.
+  `mCost` is memory in KiB, `tCost` iterations, `pCost` parallelism.
+- New `sc-argon2` crate over the audited RustCrypto `argon2` crate. Algorithm
+  fixed to Argon2id, version 0x13 (v1.3, the RFC 9106 standard).
+- **Verified against the Argon2 reference implementation** (argon2-cffi /
+  libargon2) — four known-answer vectors across parameter sets (including
+  parallelism = 2 and a 64-byte output) in both the Rust and TypeScript tests.
+- Validation: non-empty salt (≥8 bytes enforced by the library), positive cost
+  parameters and length; friendly errors for out-of-range params.
+
+**PBKDF2 vs Argon2id:** both derive keys from passwords. Prefer Argon2id for new
+code when you can afford the memory cost; PBKDF2 remains available for
+constrained environments or FIPS-oriented requirements.
+
+
 
 ### 🔒 Added — Wycheproof adversarial test vectors (hardening)
 

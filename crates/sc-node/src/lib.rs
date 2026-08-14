@@ -175,6 +175,32 @@ pub fn pbkdf2_derive(
     Ok(Buffer::from(key))
 }
 
+// ─── Argon2id (NEW in v0.4.6) ───────────────────────────────────────────────
+
+/// Derive a key from a password with Argon2id (RFC 9106).
+///
+/// `mCost` is memory in KiB, `tCost` is iterations, `pCost` is parallelism.
+#[napi]
+pub fn argon2id_derive(
+    password: Buffer,
+    salt: Buffer,
+    m_cost: u32,
+    t_cost: u32,
+    p_cost: u32,
+    length: u32,
+) -> Result<Buffer> {
+    let key = sc_argon2::Argon2id::derive(
+        &password,
+        &salt,
+        m_cost,
+        t_cost,
+        p_cost,
+        length as usize,
+    )
+    .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(key))
+}
+
 // ─── AES-256-GCM ────────────────────────────────────────────────────────────
 
 #[napi]

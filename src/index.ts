@@ -54,6 +54,7 @@ export {
   XEd25519,
   HKDF,
   PBKDF2,
+  Argon2id,
   AES_GCM,
   AES_CBC,
   HMAC,
@@ -204,7 +205,7 @@ export {
  *
  * Bumped on every release.
  */
-export const VERSION = '0.4.5' as const;
+export const VERSION = '0.4.6' as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Default export — Convenience namespace
@@ -216,6 +217,7 @@ import {
   XEd25519,
   HKDF,
   PBKDF2,
+  Argon2id,
   AES_GCM,
   AES_CBC,
   HMAC,
@@ -260,6 +262,7 @@ const SignalisCore = Object.freeze({
   XEd25519,
   HKDF,
   PBKDF2,
+  Argon2id,
   AES_GCM,
   AES_CBC,
   ChaCha20Poly1305,
