@@ -154,7 +154,7 @@ Production-grade security.
 - [ ] AddressSanitizer
 - [ ] UndefinedBehaviorSanitizer
 - [ ] LeakSanitizer
-- [x] Google Wycheproof vectors *(v0.4.5 — AES-256-GCM + ChaCha20-Poly1305; 382 adversarial vectors incl. tampered tags / Poly1305 edge cases)*
+- [x] Google Wycheproof vectors *(v0.4.5 AEAD: AES-GCM + ChaCha20-Poly1305, 382 vectors; v0.4.7 asymmetric: X25519 + Ed25519, 669 vectors — the latter prompted switching Ed25519 to strict verification, rejecting signature malleability & non-canonical encodings)*
 - [ ] Fuzz testing
 - [ ] Side-channel review
 - [ ] Secure default configuration

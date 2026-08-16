@@ -5,7 +5,45 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.6] — 2026-08-13
+## [0.4.7] — 2026-08-14
+
+### 🔒 Security — Ed25519 now uses strict verification (behavior change)
+
+`Ed25519.verify` / `verifyBool` now use ed25519-dalek's **`verify_strict`**
+instead of the permissive `verify`. This rejects:
+
+- **Signature malleability** — a valid signature `(R, S)` could previously be
+  transformed into a *different* still-valid signature `(R, S + L)` for the same
+  message. Systems that assume signatures are unique (dedup, replay protection,
+  signature-derived IDs) were at risk. Strict verification rejects non-canonical
+  `S`.
+- **Non-canonical point encodings** and **small-order public keys**.
+
+**Impact:** all legitimate, canonically-encoded signatures continue to verify
+exactly as before — there is no impact on normal use. Only malleable /
+non-canonical / weak-key inputs (which should never be accepted) are now
+rejected. This uses the audited crate's stricter function; no cryptographic math
+was modified.
+
+### 🔒 Added — Wycheproof adversarial vectors for the asymmetric primitives
+
+Extends the AEAD Wycheproof suite (v0.4.5) to the elliptic-curve primitives —
+where the most dangerous edge cases live.
+
+- **X25519 (ECDH)**: 518 vectors (low-order points, twist points, non-canonical
+  and special public keys). `diffieHellman(private, public)` must equal the
+  expected shared secret for every case (curve25519-dalek's clamped scalar
+  multiplication is permissive and produces the all-zero secret for low-order
+  points, matching the vectors).
+- **Ed25519 (verification)**: 151 vectors (signature malleability, invalid
+  encodings, small-order keys). With strict verification, the pass/fail
+  classification now matches RFC 8032 / Wycheproof exactly.
+
+Tests only for the vectors themselves; the fixtures under `__tests__/vectors/`
+are not shipped in the npm package. Verified end-to-end against RFC 8032 strict
+reference behaviour (669 vectors).
+
+
 
 ### ✨ Added — Argon2id (memory-hard password KDF)
 

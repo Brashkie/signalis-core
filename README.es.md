@@ -32,7 +32,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 
 ---
 
-## 🎉 Novedades en v0.4.1 → v0.4.6
+## 🎉 Novedades en v0.4.1 → v0.4.7
 
 **Los releases recientes agregan dos primitivas modernas y endurecen la suite AEAD — todo retrocompatible.**
 
@@ -41,6 +41,8 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 | 🆕 **`XChaCha20Poly1305`** (v0.4.3) | AEAD de nonce extendido (24 bytes) — seguro randomizar nonces por mensaje. Verificado vs KAT de libsodium |
 | 🆕 **`PBKDF2`** (v0.4.4) | KDF de contraseñas PBKDF2-HMAC-SHA256 (RFC 8018). Verificado vs KATs estilo RFC 6070 |
 | 🆕 **`Argon2id`** (v0.4.6) | KDF de contraseñas memory-hard (RFC 9106). Verificado vs KATs de referencia libargon2 |
+| 🔒 **Ed25519 estricto** (v0.4.7) | La verificación ahora rechaza maleabilidad de firmas y encodings no-canónicos (`verify_strict`) |
+| 🔒 **Wycheproof asimétrico** (v0.4.7) | 669 vectores adversariales para X25519 + Ed25519 (puntos de orden bajo, maleabilidad) |
 | 🔒 **Vectores Wycheproof** (v0.4.5) | 382 vectores adversariales AEAD (tags alterados, edge cases de Poly1305) para AES-GCM + ChaCha20-Poly1305 |
 | 🧰 **Utilidades** (v0.4.1) | Helpers `split`, `concatBytes`, `splitBytes`, `bytesEqual` |
 | 📊 **Benchmarks Criterion** (v0.4.2) | Suite de benchmarks nativos para todas las primitivas |
@@ -403,6 +405,10 @@ Ed25519.verify(publicKey, message, sig);
 
 // Verificar (retorna boolean, no lanza)
 const ok = Ed25519.verifyBool(publicKey, message, sig);
+
+// La verificación es ESTRICTA (v0.4.7+): las firmas maleables (S no-canónico),
+// los encodings de punto no-canónicos y las claves de orden bajo se rechazan,
+// igual que la verificación estricta de RFC 8032. Las firmas legítimas no se ven afectadas.
 
 // Constantes
 Ed25519.PRIVATE_KEY_SIZE;    // 32

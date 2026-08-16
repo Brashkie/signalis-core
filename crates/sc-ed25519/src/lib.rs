@@ -10,7 +10,7 @@
 #![deny(unsafe_code)]
 #![deny(clippy::unwrap_used)]
 
-use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
+use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use rand::rngs::OsRng;
 use rand::RngCore;
 use thiserror::Error;
@@ -162,7 +162,7 @@ impl PublicKey {
         let sig = Signature::from_bytes(&sig_arr);
 
         verifying_key
-            .verify(message, &sig)
+            .verify_strict(message, &sig)
             .map_err(|_| Ed25519Error::VerificationFailed)
     }
 

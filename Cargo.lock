@@ -888,7 +888,7 @@ dependencies = [
 
 [[package]]
 name = "sc-aes"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -902,7 +902,7 @@ dependencies = [
 
 [[package]]
 name = "sc-argon2"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "argon2",
  "hex-literal",
@@ -923,7 +923,7 @@ dependencies = [
 
 [[package]]
 name = "sc-chacha20poly1305"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "chacha20poly1305",
  "hex-literal",
@@ -932,7 +932,7 @@ dependencies = [
 
 [[package]]
 name = "sc-curve25519"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "curve25519-dalek",
  "hex-literal",
@@ -945,7 +945,7 @@ dependencies = [
 
 [[package]]
 name = "sc-ed25519"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "ed25519-dalek",
  "hex-literal",
@@ -956,7 +956,7 @@ dependencies = [
 
 [[package]]
 name = "sc-encoding"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "base64",
  "hex",
@@ -965,7 +965,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hkdf"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "hex-literal",
  "hkdf",
@@ -976,7 +976,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hmac"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "hex-literal",
  "hmac",
@@ -987,7 +987,7 @@ dependencies = [
 
 [[package]]
 name = "sc-node"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "napi",
  "napi-build",
@@ -1009,7 +1009,7 @@ dependencies = [
 
 [[package]]
 name = "sc-pbkdf2"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "hex-literal",
  "pbkdf2",
@@ -1019,7 +1019,7 @@ dependencies = [
 
 [[package]]
 name = "sc-sha256"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "hex-literal",
  "sha2",
@@ -1027,7 +1027,7 @@ dependencies = [
 
 [[package]]
 name = "sc-utils"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "rand",
  "subtle",
@@ -1037,7 +1037,7 @@ dependencies = [
 
 [[package]]
 name = "sc-xed25519"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "curve25519-dalek",
  "rand",
