@@ -1,0 +1,54 @@
+# cargo-deny configuration — supply-chain policy for signalis-core.
+# Run locally with: cargo deny check
+# Docs: https://embarkstudios.github.io/cargo-deny/
+
+[graph]
+# Only check the platforms we actually ship binaries for.
+all-features = true
+
+# ─── Security advisories (RustSec) ──────────────────────────────────────────
+[advisories]
+version = 2
+# Fail on any security vulnerability in the dependency tree.
+# (Advisories are also enforced separately by the cargo-audit CI job.)
+ignore = []
+
+# ─── License policy ─────────────────────────────────────────────────────────
+# The dependency tree is RustCrypto + dalek, which are permissively licensed.
+# If `cargo deny check licenses` reports a license not in this list, add it here
+# after confirming it is an acceptable permissive license.
+[licenses]
+version = 2
+confidence-threshold = 0.9
+allow = [
+    "Apache-2.0",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "Zlib",
+    "CC0-1.0",
+]
+# Per-crate exceptions can go here if a single dependency needs a special license.
+exceptions = []
+
+# ─── Crate bans ─────────────────────────────────────────────────────────────
+[bans]
+# A crypto library must never accidentally pull in OpenSSL (we use pure-Rust
+# RustCrypto). Deny it explicitly so a stray transitive dep is caught.
+multiple-versions = "warn"
+wildcards = "allow"
+deny = [
+    { name = "openssl" },
+    { name = "openssl-sys" },
+]
+skip = []
+
+# ─── Source policy ──────────────────────────────────────────────────────────
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

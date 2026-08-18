@@ -32,7 +32,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 
 ---
 
-## 🎉 Novedades en v0.4.1 → v0.4.7
+## 🎉 Novedades en v0.4.1 → v0.4.8
 
 **Los releases recientes agregan dos primitivas modernas y endurecen la suite AEAD — todo retrocompatible.**
 
@@ -43,6 +43,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 | 🆕 **`Argon2id`** (v0.4.6) | KDF de contraseñas memory-hard (RFC 9106). Verificado vs KATs de referencia libargon2 |
 | 🔒 **Ed25519 estricto** (v0.4.7) | La verificación ahora rechaza maleabilidad de firmas y encodings no-canónicos (`verify_strict`) |
 | 🔒 **Wycheproof asimétrico** (v0.4.7) | 669 vectores adversariales para X25519 + Ed25519 (puntos de orden bajo, maleabilidad) |
+| 🛡️ **Robustecimiento** (v0.4.8) | Gate de supply-chain (`cargo-deny`), fuzzing (`cargo-fuzz`) y property-based tests — sin cambios de API |
 | 🔒 **Vectores Wycheproof** (v0.4.5) | 382 vectores adversariales AEAD (tags alterados, edge cases de Poly1305) para AES-GCM + ChaCha20-Poly1305 |
 | 🧰 **Utilidades** (v0.4.1) | Helpers `split`, `concatBytes`, `splitBytes`, `bytesEqual` |
 | 📊 **Benchmarks Criterion** (v0.4.2) | Suite de benchmarks nativos para todas las primitivas |
@@ -1013,6 +1014,13 @@ npm run coverage:open
 | `utils.ts` | 100% | 100% | 100% | 100% |
 | `validators.ts` | 100% | 100% | 100% | 100% |
 | **Total** | **~99%** | **~97%** | **100%** | **~99%** |
+
+### Además
+
+- ✅ **Vectores adversariales de Google Wycheproof** — AEAD (v0.4.5) + X25519/Ed25519 (v0.4.7), ~1.051 casos
+- ✅ **Property-based tests** (`proptest`, v0.4.8) — conmutatividad de DH, roundtrips sign→verify, determinismo de KDF, roundtrips de encoding
+- ✅ **Fuzzing** (`cargo-fuzz`, v0.4.8) — "nunca hacer panic con input arbitrario" para verify / DH / decoders (semanal)
+- ✅ **Gate de supply-chain** (`cargo-deny` + `cargo-audit`) — licencias, crates prohibidas, advisories
 
 ---
 

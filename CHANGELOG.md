@@ -5,7 +5,34 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.7] — 2026-08-14
+## [0.4.8] — 2026-08-15
+
+### 🛡️ Hardening — supply chain, fuzzing, and property tests (no API changes)
+
+A robustness-only release: no new primitives, no cryptographic math touched. It
+strengthens the `.rs` around the audited primitives.
+
+- **`cargo-deny`** — new `deny.toml` supply-chain policy (allowed licenses,
+  trusted sources, banned crates — OpenSSL is explicitly denied so a stray
+  transitive dependency can't sneak in). Enforced as a CI gate (bans/licenses/
+  sources block; advisories are non-blocking, complementing the existing
+  `cargo-audit` gate).
+- **`cargo-fuzz`** — a `fuzz/` crate with libFuzzer targets on the untrusted-input
+  surfaces: Ed25519 verification, X25519 Diffie-Hellman, and base64/hex decoding.
+  Each asserts the invariant *"never panic on arbitrary input."* Runs via a
+  weekly `fuzz.yml` workflow (kept out of the blocking CI since it needs nightly
+  and is long-running).
+- **Property-based tests (`proptest`)** — mathematical invariants checked across
+  thousands of generated inputs, added to the existing crates:
+  - X25519: Diffie-Hellman commutativity, shared-secret length.
+  - Ed25519: sign→verify round-trip, tampered-message rejection, signature length.
+  - HKDF: determinism and output-length correctness.
+  - Encoding: base64 / base64url / hex encode→decode round-trips.
+
+These target the wrapper's behaviour and invariants — the primitive math remains
+entirely RustCrypto's audited implementations.
+
+
 
 ### 🔒 Security — Ed25519 now uses strict verification (behavior change)
 

@@ -148,18 +148,18 @@ Optimize native execution.
 Production-grade security.
 
 - [x] cargo-audit *(v0.3.0 — CI gate)*
-- [ ] cargo-deny
-- [ ] cargo-fuzz
+- [x] cargo-deny *(v0.4.8 — bans/licenses/sources gate + `deny.toml`; OpenSSL explicitly banned)*
+- [x] cargo-fuzz *(v0.4.8 — fuzz targets for Ed25519 verify, X25519 DH, base64/hex decode; weekly `fuzz.yml` workflow)*
 - [ ] Miri
 - [ ] AddressSanitizer
 - [ ] UndefinedBehaviorSanitizer
 - [ ] LeakSanitizer
 - [x] Google Wycheproof vectors *(v0.4.5 AEAD: AES-GCM + ChaCha20-Poly1305, 382 vectors; v0.4.7 asymmetric: X25519 + Ed25519, 669 vectors — the latter prompted switching Ed25519 to strict verification, rejecting signature malleability & non-canonical encodings)*
-- [ ] Fuzz testing
+- [x] Fuzz testing *(v0.4.8 — see cargo-fuzz; "never panic on arbitrary input" harnesses)*
 - [ ] Side-channel review
 - [ ] Secure default configuration
 
-**Progress: 2 / 11 (18%)**
+**Progress: 5 / 11 (45%)**
 
 ---
 
@@ -278,7 +278,7 @@ Long-term enhancements.
 | 3. Cryptographic utilities | ✅ 100% (11/11) |
 | 4. Modern cryptographic primitives | 🟡 56% (5/9) |
 | 5. Performance | 🟡 10% (1/10) |
-| 6. Security hardening | 🟡 18% (2/11) |
+| 6. Security hardening | 🟡 45% (5/11) |
 | 7. Modular architecture | 🟡 75% (6/8) |
 | 8. Developer experience | 🟡 50% (4/8) |
 | 9. Testing & Quality | 🟡 22% (2/9) |
@@ -286,7 +286,7 @@ Long-term enhancements.
 | 11. Advanced cryptography | 🔴 0% (0/10) |
 | 12. Future improvements | 🔴 0% (0/8) |
 
-**Total: 54 / 120 (45%)**
+**Total: 57 / 120 (48%)**
 
 ---
 

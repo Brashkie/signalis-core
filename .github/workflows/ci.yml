@@ -212,3 +212,23 @@ jobs:
 
       - name: Audit dependencies for known vulnerabilities
         run: cargo audit --deny warnings
+
+  deny:
+    name: cargo-deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Supply-chain gate: licenses, banned crates, and trusted sources.
+      # Advisories are allowed to fail without blocking CI (a newly-published
+      # advisory shouldn't break an unrelated PR); cargo-audit is the hard gate.
+      - name: cargo-deny (bans, licenses, sources)
+        uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check bans licenses sources
+
+      - name: cargo-deny (advisories, non-blocking)
+        uses: EmbarkStudios/cargo-deny-action@v2
+        continue-on-error: true
+        with:
+          command: check advisories

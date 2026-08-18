@@ -15,4 +15,5 @@ zeroize = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]
+proptest = { workspace = true }
 hex-literal = { workspace = true }

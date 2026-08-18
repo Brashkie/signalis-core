@@ -32,7 +32,7 @@ Built with **Rust** for safety and speed, exposed to Node.js via [napi-rs](https
 
 ---
 
-## 🎉 What's New in v0.4.1 → v0.4.7
+## 🎉 What's New in v0.4.1 → v0.4.8
 
 **Recent releases add two modern primitives and harden the AEAD suite — all fully backwards compatible.**
 
@@ -43,6 +43,7 @@ Built with **Rust** for safety and speed, exposed to Node.js via [napi-rs](https
 | 🆕 **`Argon2id`** (v0.4.6) | Memory-hard password KDF (RFC 9106). Verified vs libargon2 reference KATs |
 | 🔒 **Strict Ed25519** (v0.4.7) | Verification now rejects signature malleability & non-canonical encodings (`verify_strict`) |
 | 🔒 **Wycheproof asymmetric** (v0.4.7) | 669 adversarial vectors for X25519 + Ed25519 (low-order points, malleability) |
+| 🛡️ **Hardening** (v0.4.8) | Supply-chain gate (`cargo-deny`), fuzzing (`cargo-fuzz`), and property-based tests — no API changes |
 | 🔒 **Wycheproof vectors** (v0.4.5) | 382 adversarial AEAD test vectors (tampered tags, Poly1305 edge cases) for AES-GCM + ChaCha20-Poly1305 |
 | 🧰 **Utilities** (v0.4.1) | `split`, `concatBytes`, `splitBytes`, `bytesEqual` helpers |
 | 📊 **Criterion benchmarks** (v0.4.2) | Native benchmark suite for all primitives |
@@ -1089,6 +1090,10 @@ npm run test:coverage:ui
 - ✅ Tampering detection (AES-GCM tag failures, signature failures)
 - ✅ Both CommonJS and ESM consumption paths
 - ✅ Default export and named exports
+- ✅ **Google Wycheproof adversarial vectors** — AEAD (v0.4.5) + X25519/Ed25519 (v0.4.7), ~1,051 cases
+- ✅ **Property-based tests** (`proptest`, v0.4.8) — DH commutativity, sign→verify round-trips, KDF determinism, encoding round-trips
+- ✅ **Fuzzing** (`cargo-fuzz`, v0.4.8) — "never panic on arbitrary input" for verify / DH / decoders (weekly)
+- ✅ **Supply-chain gate** (`cargo-deny` + `cargo-audit`) — licenses, banned crates, advisories
 
 **Test count: 269+ assertions across Rust (48) + Vitest (172) + CJS (12) + ESM (15) + new v0.2.0 tests (49).**
 

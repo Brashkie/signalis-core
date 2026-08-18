@@ -1,0 +1,44 @@
+name: Fuzz
+
+# Fuzzing is long-running and needs nightly + libFuzzer, so it is NOT part of the
+# main CI gate. It runs on demand and on a weekly schedule. The `build` step also
+# doubles as a compile-check for the fuzz targets.
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly, Monday 04:00 UTC
+    - cron: '0 4 * * 1'
+
+jobs:
+  fuzz:
+    name: cargo-fuzz
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-fuzz
+        run: cargo install --locked cargo-fuzz || true
+
+      # Compile-check all fuzz targets first (fast, catches build breakage).
+      - name: Build fuzz targets
+        working-directory: fuzz
+        run: cargo +nightly fuzz build
+
+      # Short smoke run of each target (60s) to catch easy crashes.
+      - name: Run ed25519_verify (60s)
+        working-directory: fuzz
+        run: cargo +nightly fuzz run ed25519_verify -- -max_total_time=60
+
+      - name: Run x25519_dh (60s)
+        working-directory: fuzz
+        run: cargo +nightly fuzz run x25519_dh -- -max_total_time=60
+
+      - name: Run encoding_decode (60s)
+        working-directory: fuzz
+        run: cargo +nightly fuzz run encoding_decode -- -max_total_time=60

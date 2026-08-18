@@ -15,3 +15,6 @@ description = "Encoding/decoding helpers for signalis-core (Base64, Hex, UTF-8)"
 base64 = { workspace = true }
 hex = { workspace = true }
 thiserror = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
