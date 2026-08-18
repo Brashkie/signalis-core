@@ -1,0 +1,38 @@
+[package]
+name = "sc-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+# Isolated workspace so cargo-fuzz doesn't clash with the main workspace.
+[workspace]
+
+[dependencies]
+libfuzzer-sys = "0.4"
+sc-ed25519 = { path = "../crates/sc-ed25519" }
+sc-curve25519 = { path = "../crates/sc-curve25519" }
+sc-encoding = { path = "../crates/sc-encoding" }
+
+[[bin]]
+name = "ed25519_verify"
+path = "fuzz_targets/ed25519_verify.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "x25519_dh"
+path = "fuzz_targets/x25519_dh.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "encoding_decode"
+path = "fuzz_targets/encoding_decode.rs"
+test = false
+doc = false
+bench = false
