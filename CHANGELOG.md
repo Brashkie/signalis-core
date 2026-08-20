@@ -5,7 +5,29 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.8] — 2026-08-15
+## [0.4.9] — 2026-08-18
+
+### ✨ Added — SHA-512 variants: HMAC-SHA512 & HKDF-SHA512
+
+Two new SHA-512-based primitives, added to the existing `HMAC` and `HKDF`
+namespaces (no new namespaces, no new dependencies — `sha2` already provides
+`Sha512`, and `hmac`/`hkdf` are generic over the hash):
+
+- **`HMAC.sha512(key, data)`** → 64-byte tag, plus **`HMAC.verifySha512(...)`**
+  (constant-time). Verified against RFC 4231 known-answer tests.
+- **`HKDF.deriveSha512(salt, ikm, info, length)`** → one-shot HKDF-SHA512
+  (64-byte PRK internally, up to 16320 bytes output). Verified against reference
+  KATs (`cryptography` + Node's `crypto.hkdfSync`).
+
+Use these when a 512-bit hash is required for domain consistency with the rest of
+a protocol. The SHA-256 variants are unchanged.
+
+### 📋 Notes
+
+- Advances Phase 4 (modern primitives) to 7/9. Remaining: SHA-3 and BLAKE3 —
+  completing those will be the milestone for **0.5.0**.
+
+
 
 ### 🛡️ Hardening — supply chain, fuzzing, and property tests (no API changes)
 

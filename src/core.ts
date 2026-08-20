@@ -34,6 +34,7 @@ import {
   CryptoError,
   AuthenticationError,
   SignatureError,
+  LengthError,
 } from './errors';
 
 import {
@@ -272,6 +273,32 @@ export const HKDF = Object.freeze({
    */
   deriveFromParams(params: HkdfParams): Buffer {
     return this.derive(params.salt, params.ikm, params.info, params.length);
+  },
+
+  /**
+   * One-shot HKDF-**SHA512** (extract + expand). Uses a 64-byte PRK internally
+   * and supports up to 16320 bytes of output. Prefer this over the SHA-256
+   * variant when a 512-bit hash is required for domain consistency.
+   *
+   * @param salt - Optional salt (`Buffer.alloc(0)` if not available)
+   * @param ikm - Input keying material
+   * @param info - Context-specific information
+   * @param length - Desired output length in bytes (1..=16320)
+   * @throws {ValidationError} If inputs are not Buffers or length is not positive.
+   */
+  deriveSha512(salt: Buffer, ikm: Buffer, info: Buffer, length: number): Buffer {
+    assertBuffer(salt, 'salt');
+    assertBuffer(ikm, 'ikm');
+    assertBuffer(info, 'info');
+    assertPositiveInteger(length, 'length');
+    if (length === 0) {
+      throw new LengthError('HKDF output length must be greater than 0', {
+        expected: '> 0',
+        actual: 0,
+      });
+    }
+    // The native layer enforces the SHA-512 upper bound (255 * 64 = 16320).
+    return native.hkdfSha512Derive(salt, ikm, info, length) as Buffer;
   },
 
   /**
@@ -605,6 +632,34 @@ export const HMAC = Object.freeze({
     assertBuffer(data, 'data');
     assertBuffer(expectedTag, 'expectedTag');
     return native.hmacSha256Verify(key, data, expectedTag) as boolean;
+  },
+
+  /**
+   * Compute HMAC-SHA512 of `data` using `key`.
+   *
+   * @param key - Authentication key (any length)
+   * @param data - Data to authenticate
+   * @returns 64-byte HMAC tag
+   */
+  sha512(key: Buffer, data: Buffer): Buffer {
+    assertBuffer(key, 'key');
+    assertBuffer(data, 'data');
+    return native.hmacSha512(key, data) as Buffer;
+  },
+
+  /**
+   * Verify an HMAC-SHA512 tag in **constant time**.
+   *
+   * @param key - Authentication key
+   * @param data - Original data
+   * @param expectedTag - Tag to verify
+   * @returns `true` if tag matches, `false` otherwise
+   */
+  verifySha512(key: Buffer, data: Buffer, expectedTag: Buffer): boolean {
+    assertBuffer(key, 'key');
+    assertBuffer(data, 'data');
+    assertBuffer(expectedTag, 'expectedTag');
+    return native.hmacSha512Verify(key, data, expectedTag) as boolean;
   },
 
   /** Tag size in bytes (32). */

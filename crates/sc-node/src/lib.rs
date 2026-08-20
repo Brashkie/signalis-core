@@ -160,6 +160,19 @@ pub fn hkdf_derive(salt: Buffer, ikm: Buffer, info: Buffer, length: u32) -> Resu
     Ok(Buffer::from(okm))
 }
 
+/// HKDF-SHA512 one-shot derive (extract + expand).
+#[napi]
+pub fn hkdf_sha512_derive(
+    salt: Buffer,
+    ikm: Buffer,
+    info: Buffer,
+    length: u32,
+) -> Result<Buffer> {
+    let okm = sc_hkdf::HkdfSha512::derive(&salt, &ikm, &info, length as usize)
+        .map_err(|e| Error::new(Status::InvalidArg, e.to_string()))?;
+    Ok(Buffer::from(okm))
+}
+
 // ─── PBKDF2-HMAC-SHA256 (NEW in v0.4.4) ─────────────────────────────────────
 
 /// Derive a key from a password with PBKDF2-HMAC-SHA256.
@@ -360,6 +373,17 @@ pub fn hmac_sha256(key: Buffer, data: Buffer) -> Buffer {
 #[napi]
 pub fn hmac_sha256_verify(key: Buffer, data: Buffer, expected_tag: Buffer) -> bool {
     sc_hmac::verify(&key, &data, &expected_tag).is_ok()
+}
+
+#[napi]
+pub fn hmac_sha512(key: Buffer, data: Buffer) -> Buffer {
+    let tag = sc_hmac::hmac_sha512(&key, &data);
+    Buffer::from(tag.to_vec())
+}
+
+#[napi]
+pub fn hmac_sha512_verify(key: Buffer, data: Buffer, expected_tag: Buffer) -> bool {
+    sc_hmac::verify_sha512(&key, &data, &expected_tag).is_ok()
 }
 
 // ─── SHA-256 ────────────────────────────────────────────────────────────────

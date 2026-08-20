@@ -32,7 +32,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 
 ---
 
-## 🎉 Novedades en v0.4.1 → v0.4.8
+## 🎉 Novedades en v0.4.1 → v0.4.9
 
 **Los releases recientes agregan dos primitivas modernas y endurecen la suite AEAD — todo retrocompatible.**
 
@@ -44,6 +44,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 | 🔒 **Ed25519 estricto** (v0.4.7) | La verificación ahora rechaza maleabilidad de firmas y encodings no-canónicos (`verify_strict`) |
 | 🔒 **Wycheproof asimétrico** (v0.4.7) | 669 vectores adversariales para X25519 + Ed25519 (puntos de orden bajo, maleabilidad) |
 | 🛡️ **Robustecimiento** (v0.4.8) | Gate de supply-chain (`cargo-deny`), fuzzing (`cargo-fuzz`) y property-based tests — sin cambios de API |
+| 🆕 **Variantes SHA-512** (v0.4.9) | `HMAC.sha512` / `HMAC.verifySha512` (RFC 4231) y `HKDF.deriveSha512` (RFC 5869) |
 | 🔒 **Vectores Wycheproof** (v0.4.5) | 382 vectores adversariales AEAD (tags alterados, edge cases de Poly1305) para AES-GCM + ChaCha20-Poly1305 |
 | 🧰 **Utilidades** (v0.4.1) | Helpers `split`, `concatBytes`, `splitBytes`, `bytesEqual` |
 | 📊 **Benchmarks Criterion** (v0.4.2) | Suite de benchmarks nativos para todas las primitivas |
@@ -706,6 +707,13 @@ import { HMAC } from '@brashkie/signalis-core';
 
 const tag = HMAC.sha256(clave, datos);                  // 32 bytes
 const valido = HMAC.verifySha256(clave, datos, tag);    // tiempo-constante
+
+// Variante SHA-512 (v0.4.9) — tag de 64 bytes
+const tag512 = HMAC.sha512(clave, datos);               // 64 bytes
+const valido512 = HMAC.verifySha512(clave, datos, tag512); // tiempo-constante
+
+// HKDF también tiene un one-shot SHA-512 (v0.4.9):
+// HKDF.deriveSha512(salt, ikm, info, length)
 ```
 
 ### SHA-256
