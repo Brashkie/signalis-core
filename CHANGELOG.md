@@ -5,7 +5,26 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.9] — 2026-08-18
+## [0.4.10] — 2026-08-20
+
+### ✨ Added — SHA-3 (SHA3-256 & SHA3-512)
+
+A new `SHA3` namespace implementing SHA-3 (FIPS 202), the Keccak-based NIST
+standard. Structurally different from the SHA-2 family — useful when a protocol
+requires SHA-3 specifically, or for algorithmic diversity from SHA-2.
+
+- `SHA3.hash256(data)` → 32-byte digest; `SHA3.hash512(data)` → 64-byte digest.
+- `SHA3.hash256All(buffers)` convenience for hashing concatenated buffers.
+- New `sc-sha3` crate over the audited RustCrypto `sha3` crate.
+- **Verified against NIST FIPS 202 known-answer tests** (empty string and "abc"
+  for both variants), cross-checked with Node's `crypto` SHA-3.
+
+### 📋 Notes
+
+- Advances Phase 4 (modern primitives) to 8/9. Only **BLAKE3** remains —
+  completing it will close Phase 4 and be the milestone for **0.5.0**.
+
+
 
 ### ✨ Added — SHA-512 variants: HMAC-SHA512 & HKDF-SHA512
 

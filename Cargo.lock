@@ -633,6 +633,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "keccak"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb26cec98cce3a3d96cbb7bced3c4b16e3d13f27ec56dbd62cbc8f39cfb9d653"
+dependencies = [
+ "cpufeatures",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.186"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1054,7 +1063,7 @@ dependencies = [
 
 [[package]]
 name = "sc-aes"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -1068,7 +1077,7 @@ dependencies = [
 
 [[package]]
 name = "sc-argon2"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "argon2",
  "hex-literal",
@@ -1089,7 +1098,7 @@ dependencies = [
 
 [[package]]
 name = "sc-chacha20poly1305"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "chacha20poly1305",
  "hex-literal",
@@ -1098,7 +1107,7 @@ dependencies = [
 
 [[package]]
 name = "sc-curve25519"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "curve25519-dalek",
  "hex-literal",
@@ -1112,7 +1121,7 @@ dependencies = [
 
 [[package]]
 name = "sc-ed25519"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "ed25519-dalek",
  "hex-literal",
@@ -1124,7 +1133,7 @@ dependencies = [
 
 [[package]]
 name = "sc-encoding"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "base64",
  "hex",
@@ -1134,7 +1143,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hkdf"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "hex-literal",
  "hkdf",
@@ -1146,7 +1155,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hmac"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "hex-literal",
  "hmac",
@@ -1157,7 +1166,7 @@ dependencies = [
 
 [[package]]
 name = "sc-node"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "napi",
  "napi-build",
@@ -1173,13 +1182,14 @@ dependencies = [
  "sc-hmac",
  "sc-pbkdf2",
  "sc-sha256",
+ "sc-sha3",
  "sc-utils",
  "sc-xed25519",
 ]
 
 [[package]]
 name = "sc-pbkdf2"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "hex-literal",
  "pbkdf2",
@@ -1189,15 +1199,23 @@ dependencies = [
 
 [[package]]
 name = "sc-sha256"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "hex-literal",
  "sha2",
 ]
 
 [[package]]
+name = "sc-sha3"
+version = "0.4.10"
+dependencies = [
+ "hex-literal",
+ "sha3",
+]
+
+[[package]]
 name = "sc-utils"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "rand 0.8.6",
  "subtle",
@@ -1207,7 +1225,7 @@ dependencies = [
 
 [[package]]
 name = "sc-xed25519"
-version = "0.4.9"
+version = "0.4.10"
 dependencies = [
  "curve25519-dalek",
  "rand 0.8.6",
@@ -1274,6 +1292,16 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
+]
+
+[[package]]
+name = "sha3"
+version = "0.10.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77fd7028345d415a4034cf8777cd4f8ab1851274233b45f84e3d955502d93874"
+dependencies = [
+ "digest",
+ "keccak",
 ]
 
 [[package]]

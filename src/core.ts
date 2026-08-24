@@ -711,6 +711,62 @@ export const SHA256 = Object.freeze({
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
+// SHA-3 (Keccak, FIPS 202) — NEW in v0.4.10
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * SHA-3 hashing (FIPS 202). Structurally different from the SHA-2 family
+ * (Keccak sponge construction) — use it when a protocol requires SHA-3
+ * specifically, or for algorithmic diversity from SHA-2.
+ *
+ * @example
+ * import { SHA3 } from '@brashkie/signalis-core';
+ * const digest = SHA3.hash256(Buffer.from('hello')); // 32 bytes
+ * const long = SHA3.hash512(Buffer.from('hello'));    // 64 bytes
+ */
+export const SHA3 = Object.freeze({
+  /**
+   * Compute SHA3-256 of `data`.
+   *
+   * @param data - Data to hash
+   * @returns 32-byte digest
+   */
+  hash256(data: Buffer): Buffer {
+    assertBuffer(data, 'data');
+    return native.sha3256(data) as Buffer;
+  },
+
+  /**
+   * Compute SHA3-512 of `data`.
+   *
+   * @param data - Data to hash
+   * @returns 64-byte digest
+   */
+  hash512(data: Buffer): Buffer {
+    assertBuffer(data, 'data');
+    return native.sha3512(data) as Buffer;
+  },
+
+  /**
+   * Hash multiple Buffers concatenated together with SHA3-256.
+   */
+  hash256All(buffers: Buffer[]): Buffer {
+    if (!Array.isArray(buffers)) {
+      throw new TypeError('buffers must be an array');
+    }
+    for (let i = 0; i < buffers.length; i++) {
+      assertBuffer(buffers[i]!, `buffers[${i}]`);
+    }
+    return this.hash256(Buffer.concat(buffers));
+  },
+
+  /** SHA3-256 output size in bytes (32). */
+  OUTPUT_SIZE_256: 32,
+  /** SHA3-512 output size in bytes (64). */
+  OUTPUT_SIZE_512: 64,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Ed25519 (Standard Digital Signatures) — NEW in v0.2.0
 // ═══════════════════════════════════════════════════════════════════════════
 

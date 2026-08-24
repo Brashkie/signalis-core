@@ -32,7 +32,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 
 ---
 
-## 🎉 Novedades en v0.4.1 → v0.4.9
+## 🎉 Novedades en v0.4.1 → v0.4.10
 
 **Los releases recientes agregan dos primitivas modernas y endurecen la suite AEAD — todo retrocompatible.**
 
@@ -45,6 +45,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 | 🔒 **Wycheproof asimétrico** (v0.4.7) | 669 vectores adversariales para X25519 + Ed25519 (puntos de orden bajo, maleabilidad) |
 | 🛡️ **Robustecimiento** (v0.4.8) | Gate de supply-chain (`cargo-deny`), fuzzing (`cargo-fuzz`) y property-based tests — sin cambios de API |
 | 🆕 **Variantes SHA-512** (v0.4.9) | `HMAC.sha512` / `HMAC.verifySha512` (RFC 4231) y `HKDF.deriveSha512` (RFC 5869) |
+| 🆕 **SHA-3** (v0.4.10) | `SHA3.hash256` / `SHA3.hash512` (FIPS 202, Keccak) — verificado vs KATs del NIST |
 | 🔒 **Vectores Wycheproof** (v0.4.5) | 382 vectores adversariales AEAD (tags alterados, edge cases de Poly1305) para AES-GCM + ChaCha20-Poly1305 |
 | 🧰 **Utilidades** (v0.4.1) | Helpers `split`, `concatBytes`, `splitBytes`, `bytesEqual` |
 | 📊 **Benchmarks Criterion** (v0.4.2) | Suite de benchmarks nativos para todas las primitivas |
@@ -726,6 +727,20 @@ import { SHA256 } from '@brashkie/signalis-core';
 const hash = SHA256.hash(datos);                        // 32 bytes
 const hash2 = SHA256.hashAll([buf1, buf2, buf3]);       // hash concatenado
 ```
+
+### SHA-3 🆕
+
+Hashing basado en Keccak (FIPS 202) — **NUEVO v0.4.10**. Estructuralmente distinto de SHA-2; usalo cuando un protocolo requiera SHA-3 o para diversidad respecto de la familia SHA-2.
+
+```typescript
+import { SHA3 } from '@brashkie/signalis-core';
+
+const d256 = SHA3.hash256(datos);   // SHA3-256 → 32 bytes
+const d512 = SHA3.hash512(datos);   // SHA3-512 → 64 bytes
+const d = SHA3.hash256All([a, b]);  // hash de buffers concatenados
+```
+
+Verificado contra los known-answer tests de NIST FIPS 202.
 
 ### Utilidades
 

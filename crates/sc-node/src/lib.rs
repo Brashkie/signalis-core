@@ -394,6 +394,24 @@ pub fn sha256(data: Buffer) -> Buffer {
     Buffer::from(hash.to_vec())
 }
 
+// ─── SHA-3 (NEW in v0.4.10) ──────────────────────────────────────────────────
+// Named without an underscore before the digits so the napi-generated JS name is
+// unambiguous (`sha3256` / `sha3512`, no snake→camel surprises).
+
+/// SHA3-256 (FIPS 202). Returns 32 bytes.
+#[napi]
+pub fn sha3256(data: Buffer) -> Buffer {
+    let hash = sc_sha3::sha3_256(&data);
+    Buffer::from(hash.to_vec())
+}
+
+/// SHA3-512 (FIPS 202). Returns 64 bytes.
+#[napi]
+pub fn sha3512(data: Buffer) -> Buffer {
+    let hash = sc_sha3::sha3_512(&data);
+    Buffer::from(hash.to_vec())
+}
+
 // ─── ChaCha20-Poly1305 (NEW in v0.3.0) ──────────────────────────────────────
 
 #[napi]

@@ -59,6 +59,7 @@ export {
   AES_CBC,
   HMAC,
   SHA256,
+  SHA3,
   // NEW in v0.3.0
   ChaCha20Poly1305,
   // NEW in v0.4.3
@@ -205,7 +206,7 @@ export {
  *
  * Bumped on every release.
  */
-export const VERSION = '0.4.9' as const;
+export const VERSION = '0.4.10' as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Default export — Convenience namespace
@@ -222,6 +223,7 @@ import {
   AES_CBC,
   HMAC,
   SHA256,
+  SHA3,
   ChaCha20Poly1305,
   XChaCha20Poly1305,
   Base64,
@@ -269,6 +271,7 @@ const SignalisCore = Object.freeze({
   XChaCha20Poly1305,
   HMAC,
   SHA256,
+  SHA3,
   // Random
   secureRandom,
   nativeSecureRandom,

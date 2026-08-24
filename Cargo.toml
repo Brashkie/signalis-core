@@ -10,6 +10,7 @@ members = [
     "crates/sc-aes",
     "crates/sc-hmac",
     "crates/sc-sha256",
+    "crates/sc-sha3",
     "crates/sc-chacha20poly1305",
     "crates/sc-utils",
     "crates/sc-encoding",
@@ -21,7 +22,7 @@ members = [
 exclude = ["fuzz"]
 
 [workspace.package]
-version = "0.4.9"
+version = "0.4.10"
 edition = "2021"
 rust-version = "1.80"
 authors = ["Brashkie (Hepein)"]
@@ -38,6 +39,7 @@ ed25519-dalek = { version = "2.1", default-features = false, features = ["zeroiz
 hkdf = "0.12"
 hmac = "0.12"
 sha2 = "0.10"
+sha3 = "0.10"
 pbkdf2 = { version = "0.12", default-features = false, features = ["hmac"] }
 argon2 = { version = "0.5", default-features = false, features = ["alloc"] }
 aes-gcm = "0.10"
@@ -72,6 +74,7 @@ sc-argon2 = { version = "0.4.0", path = "crates/sc-argon2" }
 sc-aes = { version = "0.4.0", path = "crates/sc-aes" }
 sc-hmac = { version = "0.4.0", path = "crates/sc-hmac" }
 sc-sha256 = { version = "0.4.0", path = "crates/sc-sha256" }
+sc-sha3 = { version = "0.4.0", path = "crates/sc-sha3" }
 sc-chacha20poly1305 = { version = "0.4.0", path = "crates/sc-chacha20poly1305" }
 sc-utils = { version = "0.4.0", path = "crates/sc-utils" }
 sc-encoding = { version = "0.4.0", path = "crates/sc-encoding" }
