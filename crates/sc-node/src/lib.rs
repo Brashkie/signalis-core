@@ -412,6 +412,48 @@ pub fn sha3512(data: Buffer) -> Buffer {
     Buffer::from(hash.to_vec())
 }
 
+// ─── BLAKE3 (NEW in v0.5.0) ──────────────────────────────────────────────────
+
+/// BLAKE3 hash (default 32-byte output).
+#[napi]
+pub fn blake3_hash(data: Buffer) -> Buffer {
+    Buffer::from(sc_blake3::hash(&data).to_vec())
+}
+
+/// BLAKE3 keyed hash (MAC). `key` must be exactly 32 bytes.
+#[napi]
+pub fn blake3_keyed_hash(key: Buffer, data: Buffer) -> Result<Buffer> {
+    if key.len() != 32 {
+        return Err(Error::new(
+            Status::InvalidArg,
+            format!("key must be 32 bytes, got {}", key.len()),
+        ));
+    }
+    let mut key_arr = [0u8; 32];
+    key_arr.copy_from_slice(&key);
+    Ok(Buffer::from(sc_blake3::keyed_hash(&key_arr, &data).to_vec()))
+}
+
+/// Verify a BLAKE3 keyed-hash MAC in constant time. `key` must be 32 bytes.
+#[napi]
+pub fn blake3_keyed_hash_verify(key: Buffer, data: Buffer, expected_tag: Buffer) -> Result<bool> {
+    if key.len() != 32 {
+        return Err(Error::new(
+            Status::InvalidArg,
+            format!("key must be 32 bytes, got {}", key.len()),
+        ));
+    }
+    let mut key_arr = [0u8; 32];
+    key_arr.copy_from_slice(&key);
+    Ok(sc_blake3::keyed_hash_verify(&key_arr, &data, &expected_tag))
+}
+
+/// BLAKE3 key derivation. `context` should be a hardcoded, unique string.
+#[napi]
+pub fn blake3_derive_key(context: String, key_material: Buffer) -> Buffer {
+    Buffer::from(sc_blake3::derive_key(&context, &key_material).to_vec())
+}
+
 // ─── ChaCha20-Poly1305 (NEW in v0.3.0) ──────────────────────────────────────
 
 #[napi]

@@ -26,6 +26,7 @@ sc-aes = { workspace = true }
 sc-hmac = { workspace = true }
 sc-sha256 = { workspace = true }
 sc-sha3 = { workspace = true }
+sc-blake3 = { workspace = true }
 sc-chacha20poly1305 = { workspace = true }
 sc-utils = { workspace = true }
 sc-encoding = { workspace = true }

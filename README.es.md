@@ -32,7 +32,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 
 ---
 
-## 🎉 Novedades en v0.4.1 → v0.4.10
+## 🎉 Novedades en v0.5.0
 
 **Los releases recientes agregan dos primitivas modernas y endurecen la suite AEAD — todo retrocompatible.**
 
@@ -46,6 +46,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 | 🛡️ **Robustecimiento** (v0.4.8) | Gate de supply-chain (`cargo-deny`), fuzzing (`cargo-fuzz`) y property-based tests — sin cambios de API |
 | 🆕 **Variantes SHA-512** (v0.4.9) | `HMAC.sha512` / `HMAC.verifySha512` (RFC 4231) y `HKDF.deriveSha512` (RFC 5869) |
 | 🆕 **SHA-3** (v0.4.10) | `SHA3.hash256` / `SHA3.hash512` (FIPS 202, Keccak) — verificado vs KATs del NIST |
+| 🎉 **BLAKE3** (v0.5.0) | `BLAKE3.hash` / `keyedHash` / `deriveKey` — **cierra la Fase 4** (primitivas modernas) |
 | 🔒 **Vectores Wycheproof** (v0.4.5) | 382 vectores adversariales AEAD (tags alterados, edge cases de Poly1305) para AES-GCM + ChaCha20-Poly1305 |
 | 🧰 **Utilidades** (v0.4.1) | Helpers `split`, `concatBytes`, `splitBytes`, `bytesEqual` |
 | 📊 **Benchmarks Criterion** (v0.4.2) | Suite de benchmarks nativos para todas las primitivas |
@@ -741,6 +742,32 @@ const d = SHA3.hash256All([a, b]);  // hash de buffers concatenados
 ```
 
 Verificado contra los known-answer tests de NIST FIPS 202.
+
+### BLAKE3 🆕
+
+Hashing moderno y rápido con tres modos (dominio público) — **NUEVO v0.5.0**. Una sola primitiva cubre hash, MAC y KDF.
+
+```typescript
+import { BLAKE3, secureRandom } from '@brashkie/signalis-core';
+
+// 1. Hash
+const digest = BLAKE3.hash(datos);                      // 32 bytes
+
+// 2. Keyed hash (MAC — alternativa a HMAC)
+const key = secureRandom(32);
+const mac = BLAKE3.keyedHash(key, datos);
+const ok = BLAKE3.keyedHashVerify(key, datos, mac);     // tiempo-constante
+
+// 3. Derivación de clave (alternativa a HKDF)
+const subkey = BLAKE3.deriveKey('miapp 2026-01-01 clave sesión', ikm);
+```
+
+- **keyedHash**: la clave debe ser exactamente 32 bytes. Ideal como MAC rápido.
+- **deriveKey**: el string de contexto debe ser fijo, único y específico de la app (da separación de dominio — no es un salt ni secreto).
+
+Verificado contra los test vectors oficiales de BLAKE3.
+
+**BLAKE3 vs los demás:** BLAKE3 es rapidísimo y versátil (hash + MAC + KDF en uno). Para hashing de *contraseñas*, seguí usando {@link Argon2id} — BLAKE3 es rápido a propósito, lo opuesto a lo que necesita el hashing de contraseñas.
 
 ### Utilidades
 

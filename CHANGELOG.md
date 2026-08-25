@@ -5,7 +5,40 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.4.10] — 2026-08-20
+## [0.5.0] — 2026-08-20
+
+### 🎉 Milestone — Phase 4 (modern primitives) complete
+
+This release adds **BLAKE3** and, with it, completes Phase 4 of the roadmap
+(9/9 modern primitives). The `0.5.0` version marks that milestone.
+
+### ✨ Added — BLAKE3 (hash, keyed hash, key derivation)
+
+A new `BLAKE3` namespace exposing the three core BLAKE3 modes, built on the
+official `blake3` reference crate:
+
+- **`BLAKE3.hash(data)`** — fast general-purpose hashing (32-byte output).
+- **`BLAKE3.keyedHash(key, data)`** — a MAC with a 32-byte key (an alternative to
+  HMAC), plus **`BLAKE3.keyedHashVerify(...)`** for constant-time verification.
+- **`BLAKE3.deriveKey(context, keyMaterial)`** — context-separated key derivation
+  (an alternative to HKDF). The context string provides domain separation.
+
+Verified against the official BLAKE3 test vectors (hash / keyed_hash / derive_key
+across empty, 1-byte, and 1024-byte inputs). The XOF (extendable-output) mode is
+intentionally not exposed in this release.
+
+**Why not 1.0?** The API surface is broad and stable, but a `1.0` implies a
+long-term compatibility commitment; the project continues through the remaining
+roadmap phases (hardening, platform coverage) before that.
+
+### 📋 Phase status
+
+- Phase 1 (foundation): ✅ complete + hardened
+- Phase 3 (utilities): ✅ complete
+- **Phase 4 (modern primitives): ✅ complete (ChaCha20 family, PBKDF2, Argon2id,
+  SHA-512 variants, SHA-3, BLAKE3)**
+
+
 
 ### ✨ Added — SHA-3 (SHA3-256 & SHA3-512)
 

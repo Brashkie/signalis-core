@@ -1,6 +1,6 @@
 {
   "name": "@brashkie/signalis-core",
-  "version": "0.4.10",
+  "version": "0.5.0",
   "description": "Cryptographic primitives for Signal Protocol \u2014 Rust-powered Node.js library with Ed25519, XEd25519, Curve25519, HKDF, AES-GCM (with AAD), AES-CBC, ChaCha20-Poly1305, HMAC, SHA-256 (ESM + CJS + TypeScript). Android arm64/armv7 support.",
   "type": "commonjs",
   "main": "./dist/index.cjs",
@@ -115,16 +115,16 @@
     }
   },
   "optionalDependencies": {
-    "@brashkie/signalis-core-win32-x64-msvc": "0.4.10",
-    "@brashkie/signalis-core-win32-arm64-msvc": "0.4.10",
-    "@brashkie/signalis-core-darwin-x64": "0.4.10",
-    "@brashkie/signalis-core-darwin-arm64": "0.4.10",
-    "@brashkie/signalis-core-linux-x64-gnu": "0.4.10",
-    "@brashkie/signalis-core-linux-x64-musl": "0.4.10",
-    "@brashkie/signalis-core-linux-arm64-gnu": "0.4.10",
-    "@brashkie/signalis-core-android-arm64": "0.4.10",
-    "@brashkie/signalis-core-android-arm-eabi": "0.4.10",
-    "@brashkie/signalis-core-android-x64": "0.4.10"
+    "@brashkie/signalis-core-win32-x64-msvc": "0.5.0",
+    "@brashkie/signalis-core-win32-arm64-msvc": "0.5.0",
+    "@brashkie/signalis-core-darwin-x64": "0.5.0",
+    "@brashkie/signalis-core-darwin-arm64": "0.5.0",
+    "@brashkie/signalis-core-linux-x64-gnu": "0.5.0",
+    "@brashkie/signalis-core-linux-x64-musl": "0.5.0",
+    "@brashkie/signalis-core-linux-arm64-gnu": "0.5.0",
+    "@brashkie/signalis-core-android-arm64": "0.5.0",
+    "@brashkie/signalis-core-android-arm-eabi": "0.5.0",
+    "@brashkie/signalis-core-android-x64": "0.5.0"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.4",

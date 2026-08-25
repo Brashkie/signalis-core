@@ -11,6 +11,7 @@ members = [
     "crates/sc-hmac",
     "crates/sc-sha256",
     "crates/sc-sha3",
+    "crates/sc-blake3",
     "crates/sc-chacha20poly1305",
     "crates/sc-utils",
     "crates/sc-encoding",
@@ -22,7 +23,7 @@ members = [
 exclude = ["fuzz"]
 
 [workspace.package]
-version = "0.4.10"
+version = "0.5.0"
 edition = "2021"
 rust-version = "1.80"
 authors = ["Brashkie (Hepein)"]
@@ -40,6 +41,7 @@ hkdf = "0.12"
 hmac = "0.12"
 sha2 = "0.10"
 sha3 = "0.10"
+blake3 = "1"
 pbkdf2 = { version = "0.12", default-features = false, features = ["hmac"] }
 argon2 = { version = "0.5", default-features = false, features = ["alloc"] }
 aes-gcm = "0.10"
@@ -65,19 +67,20 @@ rand_core = { version = "0.6", features = ["std"] }
 thiserror = "1.0"
 
 # Internal crates
-sc-curve25519 = { version = "0.4.0", path = "crates/sc-curve25519" }
-sc-ed25519 = { version = "0.4.0", path = "crates/sc-ed25519" }
-sc-xed25519 = { version = "0.4.0", path = "crates/sc-xed25519" }
-sc-hkdf = { version = "0.4.0", path = "crates/sc-hkdf" }
-sc-pbkdf2 = { version = "0.4.0", path = "crates/sc-pbkdf2" }
-sc-argon2 = { version = "0.4.0", path = "crates/sc-argon2" }
-sc-aes = { version = "0.4.0", path = "crates/sc-aes" }
-sc-hmac = { version = "0.4.0", path = "crates/sc-hmac" }
-sc-sha256 = { version = "0.4.0", path = "crates/sc-sha256" }
-sc-sha3 = { version = "0.4.0", path = "crates/sc-sha3" }
-sc-chacha20poly1305 = { version = "0.4.0", path = "crates/sc-chacha20poly1305" }
-sc-utils = { version = "0.4.0", path = "crates/sc-utils" }
-sc-encoding = { version = "0.4.0", path = "crates/sc-encoding" }
+sc-curve25519 = { version = "0.5.0", path = "crates/sc-curve25519" }
+sc-ed25519 = { version = "0.5.0", path = "crates/sc-ed25519" }
+sc-xed25519 = { version = "0.5.0", path = "crates/sc-xed25519" }
+sc-hkdf = { version = "0.5.0", path = "crates/sc-hkdf" }
+sc-pbkdf2 = { version = "0.5.0", path = "crates/sc-pbkdf2" }
+sc-argon2 = { version = "0.5.0", path = "crates/sc-argon2" }
+sc-aes = { version = "0.5.0", path = "crates/sc-aes" }
+sc-hmac = { version = "0.5.0", path = "crates/sc-hmac" }
+sc-sha256 = { version = "0.5.0", path = "crates/sc-sha256" }
+sc-sha3 = { version = "0.5.0", path = "crates/sc-sha3" }
+sc-blake3 = { version = "0.5.0", path = "crates/sc-blake3" }
+sc-chacha20poly1305 = { version = "0.5.0", path = "crates/sc-chacha20poly1305" }
+sc-utils = { version = "0.5.0", path = "crates/sc-utils" }
+sc-encoding = { version = "0.5.0", path = "crates/sc-encoding" }
 
 # Tests
 hex-literal = "0.4"

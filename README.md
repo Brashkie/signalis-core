@@ -32,7 +32,7 @@ Built with **Rust** for safety and speed, exposed to Node.js via [napi-rs](https
 
 ---
 
-## 🎉 What's New in v0.4.1 → v0.4.10
+## 🎉 What's New in v0.5.0
 
 **Recent releases add two modern primitives and harden the AEAD suite — all fully backwards compatible.**
 
@@ -46,6 +46,7 @@ Built with **Rust** for safety and speed, exposed to Node.js via [napi-rs](https
 | 🛡️ **Hardening** (v0.4.8) | Supply-chain gate (`cargo-deny`), fuzzing (`cargo-fuzz`), and property-based tests — no API changes |
 | 🆕 **SHA-512 variants** (v0.4.9) | `HMAC.sha512` / `HMAC.verifySha512` (RFC 4231) and `HKDF.deriveSha512` (RFC 5869) |
 | 🆕 **SHA-3** (v0.4.10) | `SHA3.hash256` / `SHA3.hash512` (FIPS 202, Keccak) — verified vs NIST KATs |
+| 🎉 **BLAKE3** (v0.5.0) | `BLAKE3.hash` / `keyedHash` / `deriveKey` — **completes Phase 4** (modern primitives) |
 | 🔒 **Wycheproof vectors** (v0.4.5) | 382 adversarial AEAD test vectors (tampered tags, Poly1305 edge cases) for AES-GCM + ChaCha20-Poly1305 |
 | 🧰 **Utilities** (v0.4.1) | `split`, `concatBytes`, `splitBytes`, `bytesEqual` helpers |
 | 📊 **Criterion benchmarks** (v0.4.2) | Native benchmark suite for all primitives |
@@ -779,6 +780,32 @@ const d = SHA3.hash256All([a, b]); // hash concatenated buffers
 ```
 
 Verified against NIST FIPS 202 known-answer tests.
+
+### BLAKE3 🆕
+
+Fast, modern hashing with three modes (FIPS-free, public-domain) — **NEW v0.5.0**. One primitive covers hashing, MAC, and KDF.
+
+```typescript
+import { BLAKE3, secureRandom } from '@brashkie/signalis-core';
+
+// 1. Hash
+const digest = BLAKE3.hash(data);                       // 32 bytes
+
+// 2. Keyed hash (MAC — an HMAC alternative)
+const key = secureRandom(32);
+const mac = BLAKE3.keyedHash(key, data);
+const ok = BLAKE3.keyedHashVerify(key, data, mac);      // constant-time
+
+// 3. Key derivation (an HKDF alternative)
+const subkey = BLAKE3.deriveKey('myapp 2026-01-01 session key', ikm);
+```
+
+- **keyedHash**: the key must be exactly 32 bytes. Great as a fast MAC.
+- **deriveKey**: the context string should be hardcoded, globally unique, and application-specific (it provides domain separation — not a salt, not secret).
+
+Verified against the official BLAKE3 test vectors.
+
+**BLAKE3 vs the others:** BLAKE3 is extremely fast and versatile (hash + MAC + KDF in one). For *password* hashing, still use {@link Argon2id} — BLAKE3 is intentionally fast, which is the opposite of what password hashing needs.
 
 ### Utilities
 

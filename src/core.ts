@@ -767,6 +767,91 @@ export const SHA3 = Object.freeze({
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
+// BLAKE3 — NEW in v0.5.0
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * BLAKE3 — a fast, modern hash function with three modes:
+ * - {@link BLAKE3.hash} — general-purpose hashing (32-byte output)
+ * - {@link BLAKE3.keyedHash} — a MAC with a 32-byte key (an HMAC alternative)
+ * - {@link BLAKE3.deriveKey} — context-separated key derivation (an HKDF alternative)
+ *
+ * @example
+ * import { BLAKE3, secureRandom } from '@brashkie/signalis-core';
+ *
+ * const digest = BLAKE3.hash(Buffer.from('hello'));           // 32 bytes
+ * const key = secureRandom(32);
+ * const mac = BLAKE3.keyedHash(key, Buffer.from('message'));  // MAC
+ * const ok = BLAKE3.keyedHashVerify(key, Buffer.from('message'), mac);
+ * const subkey = BLAKE3.deriveKey('myapp 2026 session', ikm); // KDF
+ */
+export const BLAKE3 = Object.freeze({
+  /**
+   * Compute a BLAKE3 hash (32-byte output).
+   *
+   * @param data - Data to hash
+   * @returns 32-byte digest
+   */
+  hash(data: Buffer): Buffer {
+    assertBuffer(data, 'data');
+    return native.blake3Hash(data) as Buffer;
+  },
+
+  /**
+   * Compute a BLAKE3 keyed hash (MAC).
+   *
+   * @param key - 32-byte key
+   * @param data - Data to authenticate
+   * @returns 32-byte MAC tag
+   * @throws {ValidationError} If `key` is not a 32-byte Buffer.
+   */
+  keyedHash(key: Buffer, data: Buffer): Buffer {
+    assertBufferOfSize(key, 32, 'key');
+    assertBuffer(data, 'data');
+    return native.blake3KeyedHash(key, data) as Buffer;
+  },
+
+  /**
+   * Verify a BLAKE3 keyed-hash MAC in **constant time**.
+   *
+   * @param key - 32-byte key
+   * @param data - Original data
+   * @param expectedTag - Tag to verify
+   * @returns `true` if the tag matches, `false` otherwise
+   * @throws {ValidationError} If `key` is not a 32-byte Buffer.
+   */
+  keyedHashVerify(key: Buffer, data: Buffer, expectedTag: Buffer): boolean {
+    assertBufferOfSize(key, 32, 'key');
+    assertBuffer(data, 'data');
+    assertBuffer(expectedTag, 'expectedTag');
+    return native.blake3KeyedHashVerify(key, data, expectedTag) as boolean;
+  },
+
+  /**
+   * Derive a 32-byte subkey from key material using a context string.
+   *
+   * The `context` should be hardcoded, globally unique, and application-specific
+   * (it provides domain separation — it is not a salt and not secret).
+   *
+   * @param context - Hardcoded context string
+   * @param keyMaterial - Input key material (not a password)
+   * @returns 32-byte derived key
+   */
+  deriveKey(context: string, keyMaterial: Buffer): Buffer {
+    if (typeof context !== 'string' || context.length === 0) {
+      throw new TypeError('context must be a non-empty string');
+    }
+    assertBuffer(keyMaterial, 'keyMaterial');
+    return native.blake3DeriveKey(context, keyMaterial) as Buffer;
+  },
+
+  /** Key size in bytes (32). */
+  KEY_SIZE: 32,
+  /** Default output size in bytes (32). */
+  OUTPUT_SIZE: 32,
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
 // Ed25519 (Standard Digital Signatures) — NEW in v0.2.0
 // ═══════════════════════════════════════════════════════════════════════════
 
