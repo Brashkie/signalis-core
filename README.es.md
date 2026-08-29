@@ -47,6 +47,7 @@ Construida con **Rust** para seguridad y velocidad, expuesta a Node.js mediante 
 | 🆕 **Variantes SHA-512** (v0.4.9) | `HMAC.sha512` / `HMAC.verifySha512` (RFC 4231) y `HKDF.deriveSha512` (RFC 5869) |
 | 🆕 **SHA-3** (v0.4.10) | `SHA3.hash256` / `SHA3.hash512` (FIPS 202, Keccak) — verificado vs KATs del NIST |
 | 🎉 **BLAKE3** (v0.5.0) | `BLAKE3.hash` / `keyedHash` / `deriveKey` — **cierra la Fase 4** (primitivas modernas) |
+| 🧰 **Benchmarks + higiene** (v0.5.1) | Benches Criterion expandidos a todas las primitivas; deps internas a path-solo — sin cambios de API |
 | 🔒 **Vectores Wycheproof** (v0.4.5) | 382 vectores adversariales AEAD (tags alterados, edge cases de Poly1305) para AES-GCM + ChaCha20-Poly1305 |
 | 🧰 **Utilidades** (v0.4.1) | Helpers `split`, `concatBytes`, `splitBytes`, `bytesEqual` |
 | 📊 **Benchmarks Criterion** (v0.4.2) | Suite de benchmarks nativos para todas las primitivas |

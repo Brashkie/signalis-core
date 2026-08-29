@@ -135,7 +135,7 @@ Optimize native execution.
 - [ ] Zero-copy buffers *(binding audited v0.4.2 — inputs borrowed, outputs moved, no redundant copies; no work needed)*
 - [ ] Reduced allocations *(same audit — no wasteful allocations found in the binding)*
 - [ ] Cache-friendly implementations
-- [x] Criterion benchmarks *(v0.4.2 — `crates/sc-benches`: SHA256, AES-GCM, ChaCha20-Poly1305, Curve25519, HKDF)*
+- [x] Criterion benchmarks *(v0.4.2 initial; expanded v0.5.1 — now covers SHA-256, SHA-3, BLAKE3, AES-GCM, ChaCha20/XChaCha20-Poly1305, Curve25519, HKDF (SHA-256 & SHA-512), HMAC, PBKDF2, Argon2id)*
 - [ ] SHA-256 software-path speedup *(planned — upgrade to `sha2` 0.11 for the `x86-avx2` backend; see `docs/PLAN-sha2-0.11-upgrade.md`. The `sha2` 0.10 `asm` feature was evaluated and rejected: it breaks Windows MSVC. Note: CPUs with SHA-NI already auto-accelerate today.)*
 - [ ] Performance regression detection
 

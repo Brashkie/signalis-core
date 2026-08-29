@@ -1113,7 +1113,7 @@ dependencies = [
 
 [[package]]
 name = "sc-aes"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -1127,7 +1127,7 @@ dependencies = [
 
 [[package]]
 name = "sc-argon2"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "argon2",
  "hex-literal",
@@ -1140,15 +1140,20 @@ version = "0.0.0"
 dependencies = [
  "criterion",
  "sc-aes",
+ "sc-argon2",
+ "sc-blake3",
  "sc-chacha20poly1305",
  "sc-curve25519",
  "sc-hkdf",
+ "sc-hmac",
+ "sc-pbkdf2",
  "sc-sha256",
+ "sc-sha3",
 ]
 
 [[package]]
 name = "sc-blake3"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "blake3",
  "hex-literal",
@@ -1157,7 +1162,7 @@ dependencies = [
 
 [[package]]
 name = "sc-chacha20poly1305"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "chacha20poly1305",
  "hex-literal",
@@ -1166,7 +1171,7 @@ dependencies = [
 
 [[package]]
 name = "sc-curve25519"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "curve25519-dalek",
  "hex-literal",
@@ -1180,7 +1185,7 @@ dependencies = [
 
 [[package]]
 name = "sc-ed25519"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "ed25519-dalek",
  "hex-literal",
@@ -1192,7 +1197,7 @@ dependencies = [
 
 [[package]]
 name = "sc-encoding"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "base64",
  "hex",
@@ -1202,7 +1207,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hkdf"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "hex-literal",
  "hkdf",
@@ -1214,7 +1219,7 @@ dependencies = [
 
 [[package]]
 name = "sc-hmac"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "hex-literal",
  "hmac",
@@ -1225,7 +1230,7 @@ dependencies = [
 
 [[package]]
 name = "sc-node"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "napi",
  "napi-build",
@@ -1249,7 +1254,7 @@ dependencies = [
 
 [[package]]
 name = "sc-pbkdf2"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "hex-literal",
  "pbkdf2",
@@ -1259,7 +1264,7 @@ dependencies = [
 
 [[package]]
 name = "sc-sha256"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "hex-literal",
  "sha2",
@@ -1267,7 +1272,7 @@ dependencies = [
 
 [[package]]
 name = "sc-sha3"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "hex-literal",
  "sha3",
@@ -1275,7 +1280,7 @@ dependencies = [
 
 [[package]]
 name = "sc-utils"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "rand 0.8.6",
  "subtle",
@@ -1285,7 +1290,7 @@ dependencies = [
 
 [[package]]
 name = "sc-xed25519"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "curve25519-dalek",
  "rand 0.8.6",

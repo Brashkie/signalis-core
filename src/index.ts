@@ -207,7 +207,7 @@ export {
  *
  * Bumped on every release.
  */
-export const VERSION = '0.5.0' as const;
+export const VERSION = '0.5.1' as const;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Default export — Convenience namespace

@@ -47,6 +47,7 @@ Built with **Rust** for safety and speed, exposed to Node.js via [napi-rs](https
 | 🆕 **SHA-512 variants** (v0.4.9) | `HMAC.sha512` / `HMAC.verifySha512` (RFC 4231) and `HKDF.deriveSha512` (RFC 5869) |
 | 🆕 **SHA-3** (v0.4.10) | `SHA3.hash256` / `SHA3.hash512` (FIPS 202, Keccak) — verified vs NIST KATs |
 | 🎉 **BLAKE3** (v0.5.0) | `BLAKE3.hash` / `keyedHash` / `deriveKey` — **completes Phase 4** (modern primitives) |
+| 🧰 **Benchmarks + hygiene** (v0.5.1) | Criterion benches expanded to all primitives; internal deps switched to path-only — no API changes |
 | 🔒 **Wycheproof vectors** (v0.4.5) | 382 adversarial AEAD test vectors (tampered tags, Poly1305 edge cases) for AES-GCM + ChaCha20-Poly1305 |
 | 🧰 **Utilities** (v0.4.1) | `split`, `concatBytes`, `splitBytes`, `bytesEqual` helpers |
 | 📊 **Criterion benchmarks** (v0.4.2) | Native benchmark suite for all primitives |

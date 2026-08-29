@@ -8,10 +8,15 @@ license = "Apache-2.0"
 
 [dependencies]
 sc-sha256 = { path = "../sc-sha256" }
+sc-sha3 = { path = "../sc-sha3" }
+sc-blake3 = { path = "../sc-blake3" }
 sc-aes = { path = "../sc-aes" }
 sc-chacha20poly1305 = { path = "../sc-chacha20poly1305" }
 sc-curve25519 = { path = "../sc-curve25519" }
 sc-hkdf = { path = "../sc-hkdf" }
+sc-hmac = { path = "../sc-hmac" }
+sc-pbkdf2 = { path = "../sc-pbkdf2" }
+sc-argon2 = { path = "../sc-argon2" }
 
 [dev-dependencies]
 criterion = { workspace = true }
@@ -30,4 +35,8 @@ harness = false
 
 [[bench]]
 name = "kdf"
+harness = false
+
+[[bench]]
+name = "password_kdf"
 harness = false

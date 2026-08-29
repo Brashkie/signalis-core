@@ -5,7 +5,25 @@ All notable changes to `@brashkie/signalis-core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.5.0] — 2026-08-20
+## [0.5.1] — 2026-08-26
+
+### 🧰 Changed — expanded benchmarks & internal dependency hygiene (no API changes)
+
+A maintenance/robustness release. No new primitives, no API changes, no crypto
+math touched.
+
+- **Expanded Criterion benchmarks** (`crates/sc-benches`) to cover every
+  primitive added since v0.4.2: SHA-3 (256/512) and BLAKE3 in the `hashing`
+  bench; HKDF-SHA512, HMAC (SHA-256/512) and BLAKE3 keyed/derive in the `kdf`
+  bench; and a new `password_kdf` bench for PBKDF2 and Argon2id (with modest
+  parameters so it stays runnable). Run with `cargo bench -p sc-benches`.
+- **Internal workspace dependencies switched to path-only.** The `sc-*` crates
+  are workspace-internal and not published to crates.io, so their inter-crate
+  dependencies no longer pin a `version` (only `path`). This removes the version
+  requirement that broke the build at the `0.4.x → 0.5.0` boundary and prevents
+  it from recurring on any future version bump.
+
+
 
 ### 🎉 Milestone — Phase 4 (modern primitives) complete
 
